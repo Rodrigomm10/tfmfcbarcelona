@@ -1,1 +1,6 @@
+# Winsdows Environment
 venvw/
+## Python Bytecode
+__pycache__/
+## Mac store
+.DS_Store
