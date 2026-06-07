@@ -308,6 +308,78 @@
     .group-card table { font-size: 0.78rem; }
     .group-card th { font-size: 0.7rem; padding: 6px 8px; }
     .group-card td { padding: 6px 8px; }
+    /* ══════════════════════════════════════
+       ESTILOS DE ALINEACIÓN TÁCTICA & FIFA CARDS
+    ══════════════════════════════════════ */
+    .pitch-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      height: 650px;
+      margin: 0 auto 30px auto;
+      background: linear-gradient(180deg, #1e4620 0%, #143216 100%);
+      border: 4px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.6), 0 12px 36px rgba(0,0,0,0.5);
+    }
+    
+    .pitch-line {
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+    .line-center { top: 50%; left: 0; width: 100%; height: 0; }
+    .line-circle { top: 50%; left: 50%; width: 140px; height: 140px; border-radius: 50%; transform: translate(-50%, -50%); }
+    .line-area-top { top: 0; left: 50%; width: 340px; height: 110px; border-top: none; transform: translateX(-50%); }
+    
+    .pitch-row {
+      position: absolute;
+      left: 0; width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 40px;
+    }
+    .row-delanteros { top: 12%; }
+    .row-medios     { top: 40%; }
+    .row-defensas   { top: 68%; }
+    .row-portero    { bottom: 5%; left: 50%; width: auto; transform: translateX(-50%); }
+    
+    .fifa-card {
+      width: 95px;
+      height: 140px;
+      background: linear-gradient(135deg, var(--barca-gold) 0%, #b8860b 50%, #856404 100%);
+      border-radius: 8px;
+      position: relative;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #000;
+    }
+    .fifa-card:hover { transform: translateY(-8px) scale(1.08); box-shadow: 0 16px 32px rgba(237,187,0,0.4); filter: brightness(1.1); }
+    .card-rating { font-size: 1.4rem; font-weight: 900; position: absolute; top: 6px; left: 8px; font-family: 'Impact', sans-serif; }
+    .card-pos { font-size: 0.65rem; font-weight: 800; position: absolute; top: 26px; left: 9px; opacity: 0.8; }
+    .card-badge { font-size: 1.5rem; position: absolute; top: 6px; right: 8px; }
+    .card-avatar { font-size: 2.5rem; margin-top: 10px; margin-bottom: 2px; }
+    .card-name { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(0,0,0,0.15); padding-bottom: 2px; }
+    .card-mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 6px; font-size: 0.58rem; font-weight: 700; margin-top: 4px; width: 100%; text-align: center; }
+    
+    /* Modal (Pop-up) */
+    .stats-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+      width: 90%; max-width: 450px; padding: 24px; position: relative;
+    }
+    .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.5rem; color: var(--muted); cursor: pointer; }
+    .close-modal:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -823,70 +895,50 @@
     </div>
 
     <!-- PARTIDOS -->
-    <div id="sec-partidos" class="section">
-      <div class="card">
-        <h2>Resultados por partido</h2>
-        <div class="filter-bar">
-          <input id="games-search" type="text" placeholder="Buscar rival..." oninput="filterGames()">
-          <select id="games-result-filter" onchange="filterGames()">
-            <option value="">Todos los resultados</option>
-            <option value="W">Victoria</option><option value="D">Empate</option><option value="L">Derrota</option>
-          </select>
-          <select id="games-comp-filter" onchange="filterGames()"><option value="">Todas las competiciones</option></select>
-        </div>
-        <div class="table-wrap">
-          <table id="games-table">
-            <thead><tr><th onclick="sortTable('games-table',0)">Fecha</th><th>Competición</th><th>Local</th><th>Resultado</th><th>Visitante</th><th>R</th><th>xG</th><th>xGA</th></tr></thead>
-            <tbody id="games-tbody"><tr><td colspan="8" class="loading">Cargando...</td></tr></tbody>
-          </table>
+      <div id="sec-partidos" class="section">
+        <div class="card">
+          <h2>Resultados por partido</h2>
+          <div class="filter-bar">
+            <input id="games-search" type="text" placeholder="Buscar rival..." oninput="filterGames()">
+            <select id="games-result-filter" onchange="filterGames()">
+              <option value="">Todos los resultados</option>
+              <option value="W">Victoria</option><option value="D">Empate</option><option value="L">Derrota</option>
+            </select>
+            <select id="games-comp-filter" onchange="filterGames()"><option value="">Todas las competiciones</option></select>
+          </div>
+          <div class="table-wrap">
+            <table id="games-table">
+              <thead><tr><th onclick="sortTable('games-table',0)">Fecha</th><th>Competición</th><th>Local</th><th>Resultado</th><th>Visitante</th><th>R</th><th>xG</th><th>xGA</th></tr></thead>
+              <tbody id="games-tbody"><tr><td colspan="8" class="loading">Cargando...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- JUGADORES -->
+  
+      <!-- JUGADORES -->
     <div id="sec-jugadores" class="section">
-      <div class="card">
-        <h2>Estadísticas de jugadores – Barça 2025/26</h2>
-        <div class="filter-bar">
-          <input id="player-search" type="text" placeholder="Buscar jugador..." oninput="filterPlayers()">
-          <select id="player-pos-filter" onchange="filterPlayers()">
-            <option value="">Todas las posiciones</option>
-            <option value="GK">Portero</option><option value="DF">Defensa</option>
-            <option value="MF">Centrocampista</option><option value="FW">Delantero</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table id="players-table">
-            <thead><tr>
-              <th onclick="sortTable('players-table',0)">Jugador</th><th>Pos</th>
-              <th onclick="sortTable('players-table',2)">PJ</th><th onclick="sortTable('players-table',3)">Min</th>
-              <th onclick="sortTable('players-table',4)">Goles</th><th onclick="sortTable('players-table',5)">Asist.</th>
-              <th onclick="sortTable('players-table',6)">G+A</th><th onclick="sortTable('players-table',7)">Tiros</th>
-              <th onclick="sortTable('players-table',8)">TaP</th><th onclick="sortTable('players-table',9)">Int</th>
-              <th onclick="sortTable('players-table',10)">TklW</th><th>TA</th><th>TR</th>
-            </tr></thead>
-            <tbody id="players-tbody"><tr><td colspan="13" class="loading">Cargando...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <h2>xG & xA por jugador (Understat)</h2>
-        <div class="table-wrap">
-          <table id="understat-players-table">
-            <thead><tr>
-              <th onclick="sortTable('understat-players-table',0)">Jugador</th>
-              <th onclick="sortTable('understat-players-table',1)">Goles</th>
-              <th onclick="sortTable('understat-players-table',2)">xG</th>
-              <th onclick="sortTable('understat-players-table',3)">Asist.</th>
-              <th onclick="sortTable('understat-players-table',4)">xA</th>
-              <th onclick="sortTable('understat-players-table',5)">Minutos</th>
-              <th>Posición</th>
-            </tr></thead>
-            <tbody id="understat-players-tbody"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+     
+     <div class="pitch-container">
+       <div class="pitch-line line-center"></div>
+       <div class="pitch-line line-circle"></div>
+       <div class="pitch-line line-area-top"></div>
+       
+       <div class="pitch-row row-delanteros" id="row-delanteros"></div>
+       <div class="pitch-row row-medios" id="row-medios"></div>
+       <div class="pitch-row row-defensas" id="row-defensas"></div>
+       <div class="pitch-row row-portero" id="row-portero"></div>
+     </div>
+   
+   </div>
+   
+   <div id="player-stats-modal" class="stats-modal">
+     <div class="modal-content">
+       <span class="close-modal" onclick="closePlayerModal()">&times;</span>
+       <h2 id="modal-player-name" style="color: var(--barca-gold); margin-bottom: 4px; font-size: 1.6rem;">---</h2>
+       <p id="modal-player-pos" style="color: var(--muted); font-size: 0.8rem; font-weight: bold; margin-bottom: 16px;">---</p>
+       <div id="modal-stats-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+     </div>
+   </div>
 
     <!-- CHAMPIONS -->
     <div id="sec-champions" class="section">
@@ -3360,30 +3412,113 @@ function renderGames() {
   </tr>`).join('');
 }
 
-// SECCIÓN JUGADORES
-let allPlayers=[], filteredPlayers=[];
+let globalPlayersData = [];
+
 async function loadPlayers() {
-  window._playersLoaded=true;
   try {
-    const [kaggle, understat] = await Promise.allSettled([fetchJSON('/api/barca/players'), fetchJSON('/api/barca/players/understat')]);
-    if (kaggle.status==='fulfilled') { allPlayers=kaggle.value; filteredPlayers=allPlayers; renderPlayers(); }
-    if (understat.status==='fulfilled' && understat.value.length) {
-      const sorted=understat.value.sort((a,b)=>parseFloat(b.xG||0)-parseFloat(a.xG||0));
-      document.getElementById('understat-players-tbody').innerHTML=sorted.map(p=>`<tr><td><strong>${p.player_name||p.name||'—'}</strong></td><td>${fmt(p.goals)}</td><td>${fmt(p.xG,2)}</td><td>${fmt(p.assists)}</td><td>${fmt(p.xA,2)}</td><td>${fmt(p.time)}</td><td>${p.position||'—'}</td></tr>`).join('');
-    } else { document.getElementById('understat-players-tbody').innerHTML='<tr><td colspan="7" style="color:var(--muted);padding:16px;">Ejecuta 02_fetch_understat.py</td></tr>'; }
-  } catch(e) { document.getElementById('players-tbody').innerHTML=`<tr><td colspan="13"><div class="error-msg">${e.message}</div></td></tr>`; }
+    // 1. Fetch data from your Flask backend
+    const res = await fetch('/api/barca/players');
+    if (!res.ok) throw new Error("Failed to fetch players");
+    
+    globalPlayersData = await res.json();
+    renderTacticalPitch();
+    window._playersLoaded = true;
+  } catch(e) { 
+    console.error("Error setting up tactical layout:", e);
+  }
 }
-function filterPlayers() {
-  const q=document.getElementById('player-search').value.toLowerCase();
-  const pos=document.getElementById('player-pos-filter').value;
-  filteredPlayers=allPlayers.filter(p=>(!q||(p.Player||'').toLowerCase().includes(q))&&(!pos||(p.Pos||'').includes(pos)));
-  renderPlayers();
+
+function renderTacticalPitch() {
+  // Clear the field rows before drawing
+  ['delanteros', 'medios', 'defensas', 'portero'].forEach(pos => {
+    const el = document.getElementById(`row-${pos}`);
+    if (el) el.innerHTML = '';
+  });
+
+  if (!Array.isArray(globalPlayersData)) return;
+
+  globalPlayersData.forEach((player, index) => {
+    const positionRaw = (player.Pos || 'MF').toUpperCase();
+    const playerName = player.Player || player.nombre || 'Jugador';
+    
+    let targetRow = 'medios';
+    
+    // Sort player into the correct line on the pitch based on their position from Flask
+    if (positionRaw.includes('GK') || positionRaw.includes('POR')) {
+      targetRow = 'portero';
+    } else if (positionRaw.includes('FW') || positionRaw.includes('DEL') || positionRaw.includes('DC') || positionRaw.includes('ED') || positionRaw.includes('EI')) {
+      targetRow = 'delanteros';
+    } else if (positionRaw.includes('DF')) {
+      targetRow = 'defensas';
+    } else {
+      targetRow = 'medios';
+    }
+
+    const computedRating = player.Age ? Math.min(Math.max(Math.floor(80 + (player.Gls || 0) + (player.Ast || 0)), 75), 94) : 85;
+
+    // Build the visual player card HTML
+    const cardHtml = `
+      <div class="fifa-card" onclick="openPlayerModal(${index})">
+        <div class="card-rating">${computedRating}</div>
+        <div class="card-pos">${positionRaw.split(',')[0]}</div>
+        <div class="card-badge">🔵</div>
+        <div class="card-avatar">🏃‍♂️</div>
+        <div class="card-name">${playerName.split(' ').pop()}</div>
+        <div class="card-mini-stats">
+          <div>G: ${player.Gls ?? 0}</div>
+          <div>A: ${player.Ast ?? 0}</div>
+          <div>PJ: ${player.MP ?? 0}</div>
+          <div>Sh: ${player.SoT ?? player.Sh ?? 0}</div>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById(`row-${targetRow}`).innerHTML += cardHtml;
+  });
 }
-function renderPlayers() {
-  const tbody=document.getElementById('players-tbody');
-  if(!filteredPlayers.length){tbody.innerHTML='<tr><td colspan="13" class="loading">Sin resultados</td></tr>';return;}
-  tbody.innerHTML=filteredPlayers.map(p=>`<tr><td><strong>${p.Player||'—'}</strong></td><td>${p.Pos||'—'}</td><td>${p.MP||'—'}</td><td>${p.Min||'—'}</td><td>${p.Gls||0}</td><td>${p.Ast||0}</td><td>${p['G+A']||0}</td><td>${p.Sh||'—'}</td><td>${p.SoT||'—'}</td><td>${p.Int||'—'}</td><td>${p.TklW||'—'}</td><td>${p.CrdY||0}</td><td>${p.CrdR||0}</td></tr>`).join('');
+
+// ══════════════════════════════════════
+// MODAL CONTROLLERS (For clicking a player)
+// ══════════════════════════════════════
+function openPlayerModal(index) {
+  const player = globalPlayersData[index];
+  if (!player) return;
+
+  document.getElementById('modal-player-name').textContent = player.Player || 'Jugador';
+  document.getElementById('modal-player-pos').textContent = player.Pos || 'Especialista';
+
+  const statsList = document.getElementById('modal-stats-list');
+  
+  // The data that will show up in the popup window
+  const metricsToDisplay = [
+    { label: "Partidos Jugados (MP)", value: player.MP || "0" },
+    { label: "Minutos Totales", value: player.Min ? `${player.Min}'` : "—" },
+    { label: "Goles Totales", value: player.Gls ?? 0 },
+    { label: "Asistencias", value: player.Ast ?? 0 },
+    { label: "Disparos Realizados", value: player.Sh || "0" },
+    { label: "Tiros a Puerta (SoT)", value: player.SoT || "0" },
+    { label: "Entradas Ganadas (TklW)", value: player.TklW || "0" }
+  ];
+
+  statsList.innerHTML = metricsToDisplay.map(m => `
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+      <span style="color: var(--muted); font-size: 0.9rem;">${m.label}</span>
+      <span style="color: var(--text); font-weight: bold; font-size: 0.95rem;">${m.value}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('player-stats-modal').style.display = 'flex';
 }
+
+function closePlayerModal() {
+  document.getElementById('player-stats-modal').style.display = 'none';
+}
+
+// Close the modal if the user clicks outside of it
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('player-stats-modal');
+  if (event.target === modal) closePlayerModal();
+});
 
 // SECCIÓN CHAMPIONS (dashboard)
 async function loadChampions() {
