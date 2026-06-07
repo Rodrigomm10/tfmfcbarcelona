@@ -341,6 +341,17 @@ def status():
     return jsonify(result)
 
 
+
+#### Prueba de como funciona esta miesh
+
+@app.route("/api/barca/lesiones")
+def barca_lesiones():
+    data = load_json("barca_lesiones.json")
+    if data is None:
+        return jsonify({"Error": "No se encontro el archivo"}), 404
+    return jsonify(data)
+
+
 if __name__ == "__main__":
     print("\n🔵 FC Barcelona Dashboard")
     print("   Abre tu navegador en: http://localhost:8080\n")

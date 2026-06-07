@@ -239,7 +239,7 @@
 
     /* FILTER */
     .filter-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-    .filter-bar input, .filter-bar select {
+.filter-bar input, .filter-bar select {
       background: var(--card); border: 1px solid var(--border); color: var(--text);
       padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none;
     }
@@ -802,6 +802,7 @@
     <button onclick="showSection('avanzadas')">📊 Stats Avanzadas</button>
     <button onclick="showSection('mercado')">💶 Plantilla & Mercado</button>
     <button onclick="showSection('europa')">🌍 Comparativa Europa</button>
+    <button onclick="showSection('lesiones')">Lesiones</button>
   </nav>
 
   <main>
@@ -992,6 +993,28 @@
         </div>
       </div>
       <div class="card"><h2>xG vs xGA – Top equipos europeos</h2><div class="chart-container" style="height:360px;"><canvas id="europe-scatter"></canvas></div></div>
+    </div>
+
+    <!-- Nueva Seccion -->
+    <div id = "sec-lesiones" class =  "section">
+      <div class="card">
+        <h2>Informe Médico - Estado de la Plantilla</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jugador</th>
+                <th>Lesión</th>
+                <th>Tiempo Estimado de Baja</th>
+                <th>Disponibilidad</th>
+              </tr>
+            </thead>
+            <tbody id="lesiones-tbody">
+              <!-- JavaScript will inject dynamic rows here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -3254,6 +3277,7 @@ function showSection(id) {
   if (id === 'avanzadas' && !window._avanzadasLoaded) loadAvanzadas();
   if (id === 'mercado' && !window._mercadoLoaded) loadMercado();
   if (id === 'europa' && !window._europaLoaded) loadEuropa();
+  if (id === 'lesiones' && !window._lesionesLoaded) loadLesiones();
 }
 
 // SECCIÓN EQUIPO
@@ -3501,6 +3525,38 @@ function sortTable(tableId, colIdx) {
   const key=`${tableId}_${colIdx}`; sortState[key]=!sortState[key];
   rows.sort((a,b)=>{ const av=a.cells[colIdx]?.textContent.trim()||'', bv=b.cells[colIdx]?.textContent.trim()||''; const an=parseFloat(av),bn=parseFloat(bv); if(!isNaN(an)&&!isNaN(bn)) return sortState[key]?an-bn:bn-an; return sortState[key]?av.localeCompare(bv):bv.localeCompare(av); });
   rows.forEach(r=>tbody.appendChild(r));
+}
+
+async function loadLesiones() {
+  try {
+    // 1. Fetch JSON from our custom Flask data service route
+    const res = await fetch('/api/barca/lesiones');
+    if (!res.ok) return;
+    
+    const data = await res.json();
+    const tbody = document.getElementById('lesiones-tbody');
+    tbody.innerHTML = ''; // Wipe out existing layouts
+
+    // 2. Map structural values directly into the DOM interface layout
+    data.forEach(item => {
+      const badgeClass = item.estado === 'IN' ? 'badge-IN' : 'badge-OUT';
+      const row = `
+        <tr>
+          <td><strong>${item.jugador}</strong></td>
+          <td>${item.lesion}</td>
+          <td>${item.tiempo_baja}</td>
+          <td><span class="badge ${badgeClass}">${item.estado}</span></td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+
+    // 3. Set the optimization state flag to true so it doesn't double-fetch
+    window._lesionesLoaded = true;
+    
+  } catch (e) {
+    console.warn('Error fetching injury data matrix:', e);
+  }
 }
 </script>
 </body>
