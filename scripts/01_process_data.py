@@ -8,6 +8,8 @@ import pandas as pd
 import json
 import os
 
+import polars as pl
+
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(BASE, "data", "raw")
 OUT = os.path.join(BASE, "data", "processed")
@@ -20,8 +22,55 @@ BARCA_ID = 131  # Transfermarkt club_id del Barça
 # ─────────────────────────────────────────────
 # 1. PARTIDOS (games.csv)
 # ─────────────────────────────────────────────
+
+### Arreglando esta miesh 
+
+
+
 print("Procesando games.csv...")
 games = pd.read_csv(os.path.join(RAW, "games.csv"), low_memory=False)
+
+
+hg = pl.col("home_club_goals").cast(pl.Int32, strict = False)
+ag = pl.col("away_club_goals").cast(pl.Int32, strict = False) # Make sure the goals are right data type
+
+is_home = (
+        (pl.col('home_club_id').cast(pl.String) == str(BARCA_ID)) | 
+        (pl.col('home_club_name').cast(pl.String) == str(BARCA_NAMES)))
+
+is_away = (
+        (pl.col('away_club_id').cast(pl.String) == str(BARCA_ID)) | 
+        (pl.col('away_club_name').cast(pl.String) == str(BARCA_NAMES))
+        )
+
+gf = pl.when(is_home).then(hg).when(is_away).then(ag).otherwise(None) #asegurarnos los goles a favor y encontra
+ga = pl.when(is_home).then(ag).when(is_away).then(hg).otherwise(None)
+
+barca_result_expr = (
+        pl.when(gf.is_null() | ga.is_null()).then(None)
+        .when(gf > ga).then(pl.lit("W"))
+        .when(gf == ga).then(pl.lit("D"))
+        .otherwise(pl.lit('L'))
+        )
+
+# Aplicamos las expresiones
+games_andres = (
+        pl.scan_csv('data\\raw\\games.csv', try_parse_dates = True)
+        .filter(( pl.col('season').is_in([2025]) ) & ((pl.col('home_club_id') == BARCA_ID)|(pl.col('away_club_id') == BARCA_ID)))
+        .with_columns(
+            barca_result = barca_result_expr
+            )
+        .select(cols_games)
+        )
+
+games_andres = games_andres.collect() # colectar con polars
+
+games_andres = games_andres.to_pandas()
+games_andres.to_json("data\\processed\\barca_games_2.json", orient="records", force_ascii=False)
+
+### Escribir el JSON
+
+games_andres.write_ndjson('data\\processed\\barca_games_2.json')
 
 # Filtrar temporada 2024/2025 y 2025/2026
 games = games[games["season"].isin([2024, 2025])]
