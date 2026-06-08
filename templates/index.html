@@ -3395,37 +3395,114 @@ async function loadEquipo() {
 }
 
 // SECCIÓN PARTIDOS
-let allGames=[], filteredGames=[];
+let allGames = [], filteredGames = [];
+
 async function loadGames() {
-  window._gamesLoaded=true;
+  window._gamesLoaded = true;
   try {
-    const [kaggle, understat] = await Promise.allSettled([fetchJSON('/api/barca/games'), fetchJSON('/api/barca/matches/understat')]);
-    if (understat.status==='fulfilled' && understat.value.length) {
-      allGames = understat.value.map(m=>({ date:m.date, competition:'La Liga', home:m.side==='h'?'FC Barcelona':(m.a?.title||'Rival'), away:m.side==='a'?'FC Barcelona':(m.h?.title||'Rival'), score:`${m.goals?.h||m.gf||'?'} - ${m.goals?.a||m.ga||'?'}`, result:(m.result||'').toUpperCase(), xG:parseFloat(m.xG||0).toFixed(2), xGA:parseFloat(m.xGA||0).toFixed(2) }));
-    } else if (kaggle.status==='fulfilled') {
-      allGames = kaggle.value.map(g=>({ date:g.date, competition:g.competition_id, home:g.home_club_name||g.home_club_id, away:g.away_club_name||g.away_club_id, score:`${g.home_club_goals} - ${g.away_club_goals}`, result:g.barca_result||'—', xG:'—', xGA:'—' }));
+    const [kaggle, understat] = await Promise.allSettled([
+      fetchJSON('/api/barca/games'), 
+      fetchJSON('/api/barca/matches/understat')
+    ]);
+
+    if (understat.status === 'fulfilled' && understat.value.length) {
+      allGames = understat.value.map(m => ({ 
+        date: m.date ? new Date(m.date).getTime() : 0, // Convert to ms timestamp
+        competition: 'La Liga', 
+        home: m.side === 'h' ? 'FC Barcelona' : (m.a?.title || 'Rival'), 
+        away: m.side === 'a' ? 'FC Barcelona' : (m.h?.title || 'Rival'), 
+        score: `${m.goals?.h || m.gf || '?'} - ${m.goals?.a || m.ga || '?'}`, 
+        result: (m.result || '').toUpperCase(), 
+        xG: parseFloat(m.xG || 0).toFixed(2), 
+        xGA: parseFloat(m.xGA || 0).toFixed(2) 
+      }));
+    } else if (kaggle.status === 'fulfilled') {
+      allGames = kaggle.value.map(g => {
+        // Calculate the match outcome dynamically since barca_result was removed
+        let res = '—';
+        const isHome = g.home_club_id === 131 || String(g.home_club_name).includes('Barcelona');
+        if (g.home_club_goals !== undefined && g.away_club_goals !== undefined) {
+          const barcaGoals = isHome ? g.home_club_goals : g.away_club_goals;
+          const rivalGoals = isHome ? g.away_club_goals : g.home_club_goals;
+          if (barcaGoals > rivalGoals) res = 'W';
+          else if (barcaGoals < rivalGoals) res = 'L';
+          else res = 'D';
+        }
+
+        return { 
+          date: g.date ? g.date * 1000000 : 0, // Convert optimized short int to ms timestamp
+          competition: g.competition_id, 
+          home: g.home_club_name || g.home_club_id, 
+          away: g.away_club_name || g.away_club_id, 
+          score: `${g.home_club_goals} - ${g.away_club_goals}`, 
+          result: res, 
+          xG: '—', 
+          xGA: '—' 
+        };
+      });
     }
-    const comps = [...new Set(allGames.map(g=>g.competition).filter(Boolean))];
+
+    const comps = [...new Set(allGames.map(g => g.competition).filter(Boolean))];
     const sel = document.getElementById('games-comp-filter');
-    comps.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
-    filteredGames=allGames; renderGames();
-  } catch(e) { document.getElementById('games-tbody').innerHTML=`<tr><td colspan="8"><div class="error-msg">${e.message}</div></td></tr>`; }
+    sel.innerHTML = '<option value="">Todas las competiciones</option>'; // Clear old options
+    comps.forEach(c => { 
+      const o = document.createElement('option'); 
+      o.value = c; 
+      o.textContent = c; 
+      sel.appendChild(o); 
+    });
+
+    filteredGames = allGames; 
+    renderGames();
+  } catch(e) { 
+    document.getElementById('games-tbody').innerHTML = `<tr><td colspan="8"><div class="error-msg">${e.message}</div></td></tr>`; 
+  }
 }
+
+// SECCION PARTIDOS
+
 function filterGames() {
-  const q=document.getElementById('games-search').value.toLowerCase();
-  const r=document.getElementById('games-result-filter').value;
-  const c=document.getElementById('games-comp-filter').value;
-  filteredGames=allGames.filter(g=>(!q||g.home.toLowerCase().includes(q)||g.away.toLowerCase().includes(q))&&(!r||g.result===r)&&(!c||g.competition===c));
+  const q = document.getElementById('games-search').value.toLowerCase();
+  const r = document.getElementById('games-result-filter').value;
+  const c = document.getElementById('games-comp-filter').value;
+  
+  filteredGames = allGames.filter(g => 
+    (!q || g.home.toLowerCase().includes(q) || g.away.toLowerCase().includes(q)) &&
+    (!r || g.result === r) &&
+    (!c || g.competition === c)
+  );
   renderGames();
 }
+
 function renderGames() {
-  const tbody=document.getElementById('games-tbody');
-  if(!filteredGames.length){tbody.innerHTML='<tr><td colspan="8" class="loading">Sin resultados</td></tr>';return;}
-  tbody.innerHTML=filteredGames.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(g=>`<tr>
-    <td>${g.date?.substring(0,10)||'—'}</td><td>${g.competition||'—'}</td>
-    <td>${g.home}</td><td style="text-align:center;font-weight:700;">${g.score}</td><td>${g.away}</td>
-    <td><span class="badge badge-${g.result}">${g.result}</span></td><td>${g.xG}</td><td>${g.xGA}</td>
-  </tr>`).join('');
+  const tbody = document.getElementById('games-tbody');
+  if (!filteredGames.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Sin resultados</td></tr>';
+    return;
+  }
+
+  // Pure numeric sort (Descending order: newest matches first)
+  filteredGames.sort((a, b) => b.date - a.date);
+
+  tbody.innerHTML = filteredGames.map(g => {
+    // Safely parse timestamp back to YYYY-MM-DD format
+    let dateDisplay = '—';
+    if (g.date) {
+      const d = new Date(g.date);
+      dateDisplay = isNaN(d.getTime()) ? '—' : d.toISOString().substring(0, 10);
+    }
+
+    return `<tr>
+      <td>${dateDisplay}</td>
+      <td>${g.competition || '—'}</td>
+      <td>${g.home}</td>
+      <td style="text-align:center;font-weight:700;">${g.score}</td>
+      <td>${g.away}</td>
+      <td><span class="badge badge-${g.result}">${g.result}</span></td>
+      <td>${g.xG}</td>
+      <td>${g.xGA}</td>
+    </tr>`;
+  }).join('');
 }
 
 let globalPlayersData = [];
