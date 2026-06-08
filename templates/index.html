@@ -314,8 +314,8 @@
     .pitch-container {
       position: relative;
       width: 100%;
-      max-width: 900px;
-      height: 650px;
+      max-width: 1000px;
+      height: 1100px;
       margin: 0 auto 30px auto;
       background: linear-gradient(180deg, #1e4620 0%, #143216 100%);
       border: 4px solid rgba(255, 255, 255, 0.15);
@@ -323,36 +323,33 @@
       overflow: hidden;
       box-shadow: inset 0 0 60px rgba(0,0,0,0.6), 0 12px 36px rgba(0,0,0,0.5);
     }
-    
-    .pitch-line {
-      position: absolute;
-      border: 2px solid rgba(255,255,255,0.08);
-      pointer-events: none;
-    }
+    .pitch-line { position: absolute; border: 2px solid rgba(255,255,255,0.08); pointer-events: none; }
     .line-center { top: 50%; left: 0; width: 100%; height: 0; }
     .line-circle { top: 50%; left: 50%; width: 140px; height: 140px; border-radius: 50%; transform: translate(-50%, -50%); }
     .line-area-top { top: 0; left: 50%; width: 340px; height: 110px; border-top: none; transform: translateX(-50%); }
-    
+
     .pitch-row {
       position: absolute;
       left: 0; width: 100%;
       display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 0 40px;
+      flex-wrap: wrap; /* Evita que se amontonen si hay muchos defensas */
+      justify-content: center;
+      gap: 12px;
+      padding: 0 10px;
+      z-index: 2;
     }
-    .row-delanteros { top: 12%; }
-    .row-medios     { top: 40%; }
-    .row-defensas   { top: 68%; }
-    .row-portero    { bottom: 5%; left: 50%; width: auto; transform: translateX(-50%); }
-    
+    .row-delanteros { top: 4%; }
+    .row-medios     { top: 26%; }
+    .row-defensas   { top: 54%; }
+    .row-portero    { bottom: 2%; left: 50%; width: 100%; transform: translateX(-50%); }
+
     .fifa-card {
-      width: 95px;
-      height: 140px;
+      width: 100px;
+      height: 145px;
       background: linear-gradient(135deg, var(--barca-gold) 0%, #b8860b 50%, #856404 100%);
       border-radius: 8px;
       position: relative;
-      padding: 8px;
+      padding: 6px;
       cursor: pointer;
       transition: all 0.25s ease;
       box-shadow: 0 6px 16px rgba(0,0,0,0.4);
@@ -361,23 +358,40 @@
       align-items: center;
       color: #000;
     }
-    .fifa-card:hover { transform: translateY(-8px) scale(1.08); box-shadow: 0 16px 32px rgba(237,187,0,0.4); filter: brightness(1.1); }
-    .card-rating { font-size: 1.4rem; font-weight: 900; position: absolute; top: 6px; left: 8px; font-family: 'Impact', sans-serif; }
-    .card-pos { font-size: 0.65rem; font-weight: 800; position: absolute; top: 26px; left: 9px; opacity: 0.8; }
-    .card-badge { font-size: 1.5rem; position: absolute; top: 6px; right: 8px; }
-    .card-avatar { font-size: 2.5rem; margin-top: 10px; margin-bottom: 2px; }
-    .card-name { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(0,0,0,0.15); padding-bottom: 2px; }
-    .card-mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 6px; font-size: 0.58rem; font-weight: 700; margin-top: 4px; width: 100%; text-align: center; }
+    .fifa-card:hover { transform: translateY(-8px) scale(1.08); box-shadow: 0 16px 32px rgba(237,187,0,0.4); filter: brightness(1.1); z-index: 10; }
+    .card-pos { font-size: 0.7rem; font-weight: 800; position: absolute; top: 6px; left: 8px; opacity: 0.9; }
+    .card-badge { font-size: 1.1rem; position: absolute; top: 4px; right: 6px; }
     
-    /* Modal (Pop-up) */
-    .stats-modal {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center;
+    .card-avatar-img { 
+      width: 55px; 
+      height: 55px; 
+      object-fit: cover; 
+      border-radius: 50%; 
+      margin-top: 18px; 
+      margin-bottom: 4px; 
+      border: 2px solid #fff;
+      background: rgba(255,255,255,0.2);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
-    .modal-content {
-      background: var(--card); border: 2px solid var(--border); border-radius: 12px;
-      width: 90%; max-width: 450px; padding: 24px; position: relative;
+    
+    .card-name { 
+	    font-size: 0.62rem; 
+	    font-weight: 800; 
+	    text-transform: uppercase; 
+	    text-align: center; 
+	    width: 100%; 
+	    white-space: nowrap; 
+	    overflow: hidden; 
+	    text-overflow: ellipsis; 
+	    border-bottom: 1px solid rgba(0,0,0,0.15); 
+	    padding-bottom: 4px; 
+	    margin-bottom: 2px;
     }
+    .card-mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 6px; font-size: 0.55rem; font-weight: 700; margin-top: 4px; width: 100%; text-align: center; }
+
+    /* Modal Pop-up */
+    .stats-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; }
+    .modal-content { background: var(--card); border: 2px solid var(--border); border-radius: 12px; width: 90%; max-width: 450px; padding: 24px; position: relative; }
     .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.5rem; color: var(--muted); cursor: pointer; }
     .close-modal:hover { color: var(--text); }
   </style>
@@ -916,19 +930,21 @@
       </div>
   
       <!-- JUGADORES -->
-    <div id="sec-jugadores" class="section">
-     
-     <div class="pitch-container">
-       <div class="pitch-line line-center"></div>
-       <div class="pitch-line line-circle"></div>
-       <div class="pitch-line line-area-top"></div>
+   <div id="sec-jugadores" class="section active">
+     <div class="card" style="background: transparent; border: none;">
+       <h2 style="text-align: center; margin-bottom: 20px;">PLANTILLA ACTUAL - DISPOSICIÓN TÁCTICA</h2>
        
-       <div class="pitch-row row-delanteros" id="row-delanteros"></div>
-       <div class="pitch-row row-medios" id="row-medios"></div>
-       <div class="pitch-row row-defensas" id="row-defensas"></div>
-       <div class="pitch-row row-portero" id="row-portero"></div>
+       <div class="pitch-container">
+         <div class="pitch-line line-center"></div>
+         <div class="pitch-line line-circle"></div>
+         <div class="pitch-line line-area-top"></div>
+         
+         <div class="pitch-row row-delanteros" id="row-delanteros"></div>
+         <div class="pitch-row row-medios" id="row-medios"></div>
+         <div class="pitch-row row-defensas" id="row-defensas"></div>
+         <div class="pitch-row row-portero" id="row-portero"></div>
+       </div>
      </div>
-   
    </div>
    
    <div id="player-stats-modal" class="stats-modal">
@@ -3414,111 +3430,147 @@ function renderGames() {
 
 let globalPlayersData = [];
 
-async function loadPlayers() {
-  try {
-    // 1. Fetch data from your Flask backend
-    const res = await fetch('/api/barca/players');
-    if (!res.ok) throw new Error("Failed to fetch players");
-    
-    globalPlayersData = await res.json();
-    renderTacticalPitch();
-    window._playersLoaded = true;
-  } catch(e) { 
-    console.error("Error setting up tactical layout:", e);
-  }
-}
-
-function renderTacticalPitch() {
-  // Clear the field rows before drawing
-  ['delanteros', 'medios', 'defensas', 'portero'].forEach(pos => {
-    const el = document.getElementById(`row-${pos}`);
-    if (el) el.innerHTML = '';
-  });
-
-  if (!Array.isArray(globalPlayersData)) return;
-
-  globalPlayersData.forEach((player, index) => {
-    const positionRaw = (player.Pos || 'MF').toUpperCase();
-    const playerName = player.Player || player.nombre || 'Jugador';
-    
-    let targetRow = 'medios';
-    
-    // Sort player into the correct line on the pitch based on their position from Flask
-    if (positionRaw.includes('GK') || positionRaw.includes('POR')) {
-      targetRow = 'portero';
-    } else if (positionRaw.includes('FW') || positionRaw.includes('DEL') || positionRaw.includes('DC') || positionRaw.includes('ED') || positionRaw.includes('EI')) {
-      targetRow = 'delanteros';
-    } else if (positionRaw.includes('DF')) {
-      targetRow = 'defensas';
-    } else {
-      targetRow = 'medios';
+  async function loadPlayers() {
+    try {
+      const res = await fetch('/api/barca/players');
+      if (!res.ok) throw new Error("Failed to fetch players");
+      
+      globalPlayersData = await res.json();
+      renderTacticalPitch();
+      window._playersLoaded = true;
+    } catch(e) { 
+      console.error("Error setting up tactical layout:", e);
     }
+  }
 
-    const computedRating = player.Age ? Math.min(Math.max(Math.floor(80 + (player.Gls || 0) + (player.Ast || 0)), 75), 94) : 85;
-
-    // Build the visual player card HTML
-    const cardHtml = `
-      <div class="fifa-card" onclick="openPlayerModal(${index})">
-        <div class="card-rating">${computedRating}</div>
-        <div class="card-pos">${positionRaw.split(',')[0]}</div>
-        <div class="card-badge">🔵</div>
-        <div class="card-avatar">🏃‍♂️</div>
-        <div class="card-name">${playerName.split(' ').pop()}</div>
-        <div class="card-mini-stats">
-          <div>G: ${player.Gls ?? 0}</div>
-          <div>A: ${player.Ast ?? 0}</div>
-          <div>PJ: ${player.MP ?? 0}</div>
-          <div>Sh: ${player.SoT ?? player.Sh ?? 0}</div>
-        </div>
-      </div>
-    `;
+  function renderTacticalPitch() {
+    const positions = ['delanteros', 'medios', 'defensas', 'portero'];
     
-    document.getElementById(`row-${targetRow}`).innerHTML += cardHtml;
+    positions.forEach(pos => {
+      const el = document.getElementById(`row-${pos}`);
+      if (el) el.innerHTML = '';
+    });
+
+    if (!Array.isArray(globalPlayersData) || !globalPlayersData.length) return;
+
+    // Diccionario para vincular los nombres con tus archivos PNG en /static/img/jugadoresbarca/
+    const playerImageMap = {
+      "João Cancelo": "02-joaocancelo.png",
+      "Alejandro Balde": "03-alejandrobalde.png",
+      "Ronald Araújo": "04-ronaldaraujo.png",
+      "Pau Cubarsí": "05-paucubarsí.png",
+      "Gavi": "06-gavi.png",
+      "Ferrán Torres": "07-ferrantorres.png",
+      "Pedri": "08-pedri.png",
+      "Robert Lewandowski": "09-robertlewandowski.png",
+      "Lamine Yamal": "10-lamineyamal.png",
+      "Raphinha": "11-raphinha.png",
+      "Joan García": "13-joangarcia.png",
+      "Marcus Rashford": "14-marcusrashford.png",
+      "Andreas Christensen": "15-andreaschristensen.png",
+      "Fermin López": "16-fermínlópez.png",
+      "Marc Casado": "17-marccasadó.png",
+      "Gerard Martín": "18-gerardmartín.png",
+      "Roony Bardghji": "19-roonybardghji.png",
+      "Dani Olmo": "20-daniolmo.png",
+      "Frenkie de Jong": "21-frenkiedejong.png",
+      "Marc Bernal": "22-marcbernal.png",
+      "Jules Koundé": "23-jouleskounde.png", 
+      "Eric García": "24-ericgarcía.png",
+      "Wojciech Szczęsny": "25-wojciechszczesny.png",
+      "Jofre Torrents": "26-jofretorrents.png",
+      "Dro Fernández": "27-drofernández.png",
+      "Toni Fernández": "29-tonifernández.png",
+      "Xavi Espart": "42-xaviespart.png",
+      "Tomas Marques": "43-tommymarqués.png"
+    };
+
+    globalPlayersData.forEach((player, index) => {
+      const positionRaw = (player.Pos || 'MF').toUpperCase();
+      const playerName = player.Player || player.nombre || 'Jugador';
+      
+      let targetRow = 'medios';
+      
+      if (positionRaw.includes('GK') || positionRaw.includes('POR')) {
+        targetRow = 'portero';
+      } else if (positionRaw.includes('FW') || positionRaw.includes('DEL') || positionRaw.includes('DC')) {
+        targetRow = 'delanteros';
+      } else if (positionRaw.includes('DF')) {
+        targetRow = 'defensas';
+      } else if (positionRaw.includes('MF') || positionRaw.includes('MC')) {
+        targetRow = 'medios';
+      }
+
+      // Buscar el nombre del archivo en el diccionario. Si no existe, usa la silueta por defecto.
+      const exactFilename = playerImageMap[playerName];
+      const imageSrc = exactFilename ? `/static/img/jugadoresbarca/${exactFilename}` : "https://cdn-icons-png.flaticon.com/512/3237/3237472.png";
+
+      const cardHtml = `
+        <div class="fifa-card" onclick="openPlayerModal(${index})">
+          <div class="card-pos">${positionRaw.split(',')[0]}</div>
+          <div class="card-badge">🔵</div>
+          
+          <img class="card-avatar-img" 
+               src="${imageSrc}" 
+               onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/3237/3237472.png';" 
+               alt="${playerName}">
+               
+          <div class="card-name">${playerName.split(' ').pop()}</div>
+          <div class="card-mini-stats">
+            <div>G: ${player.Gls ?? 0}</div>
+            <div>A: ${player.Ast ?? 0}</div>
+            <div>PJ: ${player.MP ?? 0}</div>
+            <div>Sh: ${player.SoT ?? player.Sh ?? 0}</div>
+          </div>
+        </div>
+      `;
+      
+      const rowElement = document.getElementById(`row-${targetRow}`);
+      if (rowElement) rowElement.innerHTML += cardHtml;
+    });
+  }
+
+  function openPlayerModal(index) {
+    const player = globalPlayersData[index];
+    if (!player) return;
+
+    document.getElementById('modal-player-name').textContent = player.Player || 'Jugador';
+    document.getElementById('modal-player-pos').textContent = player.Pos || 'Especialista';
+
+    const statsList = document.getElementById('modal-stats-list');
+    
+    const metricsToDisplay = [
+      { label: "Partidos Jugados (MP)", value: player.MP || "0" },
+      { label: "Minutos Totales", value: player.Min ? `${player.Min}'` : "—" },
+      { label: "Goles Totales", value: player.Gls ?? 0 },
+      { label: "Asistencias", value: player.Ast ?? 0 },
+      { label: "Goles + Asistencias", value: player['G+A'] || ((player.Gls || 0) + (player.Ast || 0)) },
+      { label: "Disparos Realizados (Sh)", value: player.Sh || "0" },
+      { label: "Tiros a Puerta (SoT)", value: player.SoT || "0" },
+      { label: "Entradas Ganadas (TklW)", value: player.TklW || "0" },
+      { label: "Intercepciones (Int)", value: player.Int || "0" }
+    ];
+
+    statsList.innerHTML = metricsToDisplay.map(m => `
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+        <span style="color: var(--muted); font-size: 0.9rem;">${m.label}</span>
+        <span style="color: var(--text); font-weight: bold; font-size: 0.95rem;">${m.value}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('player-stats-modal').style.display = 'flex';
+  }
+
+  function closePlayerModal() {
+    document.getElementById('player-stats-modal').style.display = 'none';
+  }
+
+  window.addEventListener('click', function(event) {
+    const modal = document.getElementById('player-stats-modal');
+    if (event.target === modal) {
+      closePlayerModal();
+    }
   });
-}
-
-// ══════════════════════════════════════
-// MODAL CONTROLLERS (For clicking a player)
-// ══════════════════════════════════════
-function openPlayerModal(index) {
-  const player = globalPlayersData[index];
-  if (!player) return;
-
-  document.getElementById('modal-player-name').textContent = player.Player || 'Jugador';
-  document.getElementById('modal-player-pos').textContent = player.Pos || 'Especialista';
-
-  const statsList = document.getElementById('modal-stats-list');
-  
-  // The data that will show up in the popup window
-  const metricsToDisplay = [
-    { label: "Partidos Jugados (MP)", value: player.MP || "0" },
-    { label: "Minutos Totales", value: player.Min ? `${player.Min}'` : "—" },
-    { label: "Goles Totales", value: player.Gls ?? 0 },
-    { label: "Asistencias", value: player.Ast ?? 0 },
-    { label: "Disparos Realizados", value: player.Sh || "0" },
-    { label: "Tiros a Puerta (SoT)", value: player.SoT || "0" },
-    { label: "Entradas Ganadas (TklW)", value: player.TklW || "0" }
-  ];
-
-  statsList.innerHTML = metricsToDisplay.map(m => `
-    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
-      <span style="color: var(--muted); font-size: 0.9rem;">${m.label}</span>
-      <span style="color: var(--text); font-weight: bold; font-size: 0.95rem;">${m.value}</span>
-    </div>
-  `).join('');
-
-  document.getElementById('player-stats-modal').style.display = 'flex';
-}
-
-function closePlayerModal() {
-  document.getElementById('player-stats-modal').style.display = 'none';
-}
-
-// Close the modal if the user clicks outside of it
-window.addEventListener('click', function(event) {
-  const modal = document.getElementById('player-stats-modal');
-  if (event.target === modal) closePlayerModal();
-});
 
 // SECCIÓN CHAMPIONS (dashboard)
 async function loadChampions() {

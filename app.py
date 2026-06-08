@@ -31,7 +31,7 @@ def index():
 # ─── API: PARTIDOS ────────────────────────────
 @app.route("/api/barca/games")
 def barca_games():
-    data = load_json("barca_games.json")
+    data = load_json("barca_games_2.json")
     if data is None:
         return jsonify({"error": "Datos no encontrados. Ejecuta scripts/01_process_data.py"}), 404
     return jsonify(data)
