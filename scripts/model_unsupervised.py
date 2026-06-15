@@ -29,7 +29,7 @@ def silhouette_for_k(k, X):
     return float(silo_score(X, km.labels_, metric="euclidean"))
 
 players = (
-        pl.scan_csv('data\\raw\\players_data-2025_2026.csv')
+        pl.scan_csv('data/raw/players_data-2025_2026.csv')
         ).collect()
 
 ## revisar duplicados
@@ -84,7 +84,7 @@ X_for_scaled = for_scaler.fit_transform(X_for.values)
 
 
 #### Finding the good k for forwards
-#### Max number of clusters is 8
+#### Max number of clusters is 10
 ks = list(range(2, 11))
 elbow_for_res = [kmeans_wss(k,X_for_scaled) for k in ks]
 
@@ -97,7 +97,7 @@ df_res_for = pd.DataFrame({
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_res_for, x="k", y="wss", marker="o", linewidth=2.5, markersize=8)
-plt.xticks(df_pd["k"])
+plt.xticks(df_res_for["k"])
 plt.title("Elbow Method for Optimal k", fontweight="bold", pad=15)
 plt.show()
 
@@ -150,7 +150,7 @@ forward_results = pd.DataFrame({
 print(forward_results)
 
 
-### MIremos los resultados
+### Miremos los resultados
 
 forward_results = forward_results.set_index("Feature")
 fig, ax = plt.subplots(figsize=(9, 6.5))
@@ -171,9 +171,10 @@ ax.set_ylabel("Features", fontsize=12, labelpad=10)
 plt.tight_layout()
 plt.show()
 
-########
 
+#--------------------------------------------------------------------------
 midfield = players.filter(pl.col('Pos').is_in(['MF', 'MF,FW', 'MF,DF']))
+
 ### para los mediocampistas
 
 
