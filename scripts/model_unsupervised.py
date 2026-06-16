@@ -1,4 +1,5 @@
 import polars as pl
+from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import pandas as pd
@@ -49,6 +50,8 @@ players = players.with_columns(
 ###### 
 
 forwards = players.filter(pl.col('Pos').is_in(['FW', 'FW,MF']))
+lamine = players.filter(pl.col('Player') == 'Lamine Yamal')
+forwards = pl.concat([forwards, lamine])
 forwards = forwards.to_pandas()
 player_forwards = forwards['Player'].astype(str)
 team_forwards = forwards['Squad'].astype(str)
@@ -133,6 +136,27 @@ forwards['cluster'].value_counts()
 forward_clusters = forwards[['Player', 'cluster']].sort_values(['cluster'])
 
 print(forward_clusters.to_string(index = False))
+
+barca_forwards = forwards[forwards['Squad'] == 'Barcelona']['Player'].to_list()
+
+for player in barca_forwards:
+    player_idx = forwards[forwards['Player'] == player].index[0]
+    player_cluster = forwards.loc[player_idx, 'cluster']
+    target_features = X_for_scaled[player_idx].reshape(1, -1)
+    same_cluster_mask = (forwards['cluster'] == player_cluster) & (forwards['Player'] != player)
+    cluster_mates = forwards[same_cluster_mask].copy()
+    cluster_features = X_for_scaled[cluster_mates.index]
+    distances = euclidean_distances(target_features, cluster_features).flatten()
+    cluster_mates['distance_to_target'] = distances
+    top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
+    print(f"Result for {player}")
+    print(f"Assigned Cluster: {player_cluster}")
+    print(f"Top 5 closest stylistic matches within the cluster:")
+    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
+
+
+
+
 #### Checar que no esta Lamine, haremos cambios en esto
 
 
@@ -261,7 +285,22 @@ midfield['cluster'] = for_kmeans.labels_
 
 
 midfield['cluster'].value_counts()
+barca_midfield = midfield[midfield['Squad'] == 'Barcelona']['Player'].to_list()
 
+for player in barca_midfield:
+    player_idx = midfield[midfield['Player'] == player].index[0]
+    player_cluster = midfield.loc[player_idx, 'cluster']
+    target_features = X_for_scaled[player_idx].reshape(1, -1)
+    same_cluster_mask = (midfield['cluster'] == player_cluster) & (midfield['Player'] != player)
+    cluster_mates = midfield[same_cluster_mask].copy()
+    cluster_features = X_for_scaled[cluster_mates.index]
+    distances = euclidean_distances(target_features, cluster_features).flatten()
+    cluster_mates['distance_to_target'] = distances
+    top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
+    print(f"Result for {player}")
+    print(f"Assigned Cluster: {player_cluster}")
+    print(f"Top 5 closest stylistic matches within the cluster:")
+    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
 
 midfield_clusters = midfield[['Player', 'cluster']].sort_values(['cluster'])
 
@@ -390,6 +429,23 @@ defense['cluster'] = for_kmeans.labels_
 
 defense['cluster'].value_counts()
 
+barca_defense = defense[defense['Squad'] == 'Barcelona']['Player'].to_list()
+
+for player in barca_defense:
+    player_idx = defense[defense['Player'] == player].index[0]
+    player_cluster = defense.loc[player_idx, 'cluster']
+    target_features = X_for_scaled[player_idx].reshape(1, -1)
+    same_cluster_mask = (defense['cluster'] == player_cluster) & (defense['Player'] != player)
+    cluster_mates = defense[same_cluster_mask].copy()
+    cluster_features = X_for_scaled[cluster_mates.index]
+    distances = euclidean_distances(target_features, cluster_features).flatten()
+    cluster_mates['distance_to_target'] = distances
+    top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
+    print(f"Result for {player}")
+    print(f"Assigned Cluster: {player_cluster}")
+    print(f"Top 5 closest stylistic matches within the cluster:")
+    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
+
 defense_clusters = defense[['Player', 'cluster']].sort_values(['cluster'])
 
 print(defense_clusters.to_string(index = False))
@@ -513,6 +569,21 @@ keeper['cluster'] = for_kmeans.labels_
 
 keeper['cluster'].value_counts()
 
+barca_keeper = keeper[keeper['Squad'] == 'Barcelona']['Player'].to_list()
+for player in barca_keeper:
+    player_idx = keeper[keeper['Player'] == player].index[0]
+    player_cluster = keeper.loc[player_idx, 'cluster']
+    target_features = X_for_scaled[player_idx].reshape(1, -1)
+    same_cluster_mask = (keeper['cluster'] == player_cluster) & (keeper['Player'] != player)
+    cluster_mates = keeper[same_cluster_mask].copy()
+    cluster_features = X_for_scaled[cluster_mates.index]
+    distances = euclidean_distances(target_features, cluster_features).flatten()
+    cluster_mates['distance_to_target'] = distances
+    top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
+    print(f"Result for {player}")
+    print(f"Assigned Cluster: {player_cluster}")
+    print(f"Top 5 closest stylistic matches within the cluster:")
+    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
 
 keeper_clusters = keeper[['Player', 'cluster']].sort_values(['cluster'])
 
