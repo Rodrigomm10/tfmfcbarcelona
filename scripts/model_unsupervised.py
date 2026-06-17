@@ -33,6 +33,20 @@ players = (
         pl.scan_csv('data/raw/players_data-2025_2026.csv')
         ).collect()
 
+players.select(pl.col('Pos').unique())
+
+fw = players.filter(pl.col('Pos') == 'FW').select('Player')
+fw_list = fw['Player'].to_list()
+for player in fw_list:
+    print(player)
+    print('\n')
+
+fw = players.filter(pl.col('Pos') == 'FW,MF').select('Player')
+fw_list = fw['Player'].to_list()
+for player in fw_list:
+    print(player)
+    print('\n')
+
 ## revisar duplicados
 
 duplicated = players.filter(pl.col('Player').is_duplicated()).select(['Player', 'Squad'])
