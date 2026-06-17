@@ -29,79 +29,61 @@ def silhouette_for_k(k, X):
     ).fit(X)
     return float(silo_score(X, km.labels_, metric="euclidean"))
 
-players = (
-        pl.scan_csv('data/raw/players_data-2025_2026.csv')
-        ).collect()
+#-------------------------------------------------------------------
 
-players.select(pl.col('Pos').unique())
+df = pl.read_parquet('data/raw/new_data.parquet')
+# posiciones
+df.select(pl.col('posicion').unique())
 
-fw = players.filter(pl.col('Pos') == 'FW').select('Player')
-fw_list = fw['Player'].to_list()
-for player in fw_list:
-    print(player)
-    print('\n')
+forwards = df.filter(( pl.col('posicion') == 'Forward' ) & (pl.col('Time Played') > 450.0))
 
-fw = players.filter(pl.col('Pos') == 'FW,MF').select('Player')
-fw_list = fw['Player'].to_list()
-for player in fw_list:
-    print(player)
-    print('\n')
+forwards.filter(pl.col('equipo') == 'FC Barcelona').select('nombre') 
+forwards = forwards.with_columns((pl.col('Time Played') / 90.0).alias("90s"))
 
-## revisar duplicados
+fw_features = forwards.with_columns([
+    (pl.col("Total Shots").cast(pl.Float64) / pl.col("90s")).alias("total_shots_per_90"),
+    (pl.col("Shots On Target ( inc goals )").cast(pl.Float64) / pl.col("90s")).alias("shots_on_target_per_90"),
+    (pl.col("Shots Off Target (inc woodwork)").cast(pl.Float64) / pl.col("90s")).alias("shots_off_target_per_90"),
+    (pl.col("Goals").cast(pl.Float64) / pl.col("90s")).alias("goals_per_90"),
+    (pl.col("Goals Openplay").cast(pl.Float64) / pl.col("90s")).alias("goals_openplay_per_90"),
+    (pl.col("Goals from Inside Box").cast(pl.Float64) / pl.col("90s")).alias("goals_inside_box_per_90"),
+    (pl.col("Total Big Chances Scored").cast(pl.Float64) / pl.col("90s")).alias("big_chances_scored_per_90"),
+    (pl.col("Total Big Chances Missed").cast(pl.Float64) / pl.col("90s")).alias("big_chances_missed_per_90"),
+    (pl.col("Total Touches In Opposition Box").cast(pl.Float64) / pl.col("90s")).alias("box_touches_per_90"),
+    (pl.col("Key Passes (Attempt Assists)").cast(pl.Float64) / pl.col("90s")).alias("key_passes_per_90"),
+    (pl.col("Shots Created").cast(pl.Float64) / pl.col("90s")).alias("shots_created_per_90"),
+    (pl.col("Goal Assists").cast(pl.Float64) / pl.col("90s")).alias("assists_per_90"),
+    (pl.col("Assists (Intentional)").cast(pl.Float64) / pl.col("90s")).alias("intentional_assists_per_90"),
+    (pl.col("Successful Dribbles").cast(pl.Float64) / pl.col("90s")).alias("successful_dribbles_per_90"),
+    (pl.col("Aerial Duels won").cast(pl.Float64) / pl.col("90s")).alias("aerial_duels_won_per_90"),
+    (pl.col("Goals").cast(pl.Float64) / (pl.col("Total Shots").cast(pl.Float64) + 1e-5)).alias("conversion_rate"),
+    (pl.col("Shots On Target ( inc goals )").cast(pl.Float64) / (pl.col("Total Shots").cast(pl.Float64) + 1e-5)).alias("shot_accuracy"),
+    (pl.col("Total Big Chances Scored").cast(pl.Float64) / (pl.col("Total Big Chances Scored").cast(pl.Float64) + pl.col("Total Big Chances Missed").cast(pl.Float64) + 1e-5)).alias("pct_big_chances_scored")
+])
 
-duplicated = players.filter(pl.col('Player').is_duplicated()).select(['Player', 'Squad'])
-
-
-## Arreglar nacionalidad (Data Cleaning)
-
-players = players.with_columns(
-        pl.col('Nation').str.extract(r'([A-Z]+)')
-        ).select(pl.all().exclude("Rk"))
-
-# Create the different buckets for the different kmeans clustering
-
-
-###### 
-
-forwards = players.filter(pl.col('Pos').is_in(['FW', 'FW,MF']))
-lamine = players.filter(pl.col('Player') == 'Lamine Yamal')
-forwards = pl.concat([forwards, lamine])
-forwards = forwards.to_pandas()
-player_forwards = forwards['Player'].astype(str)
-team_forwards = forwards['Squad'].astype(str)
 for_cols = [
-        'G/SoT',      
-        'SoT/90',     
-        'G/Sh',       
-        'Sh/90',      
-        'G+A-PK',     
-        'On-Off',    
-    ]
-engineered = [
-        'G-PK',       
-        'Ast',        
-        'Fld',        
-        'Off',        
-    ]
+    "total_shots_per_90", "shots_on_target_per_90", "shots_off_target_per_90", 
+    "goals_per_90", "goals_openplay_per_90", "goals_inside_box_per_90", 
+    "big_chances_scored_per_90", "big_chances_missed_per_90", "box_touches_per_90", 
+    "key_passes_per_90", "shots_created_per_90", "assists_per_90", 
+    "intentional_assists_per_90", "successful_dribbles_per_90", "aerial_duels_won_per_90", 
+    "conversion_rate", "shot_accuracy", "pct_big_chances_scored"
+]
 
+forwards = fw_features.to_pandas()
 
-for col in engineered:
-    forwards[col + '/90'] = forwards[col] / 90
-    for_cols.append(col + '/90')
+#-------------------------------------------------------------------
+
+player_forwards = forwards['nombre'].astype(str)
+team_forwards = forwards['equipo'].astype(str)
 
 X_for = forwards[for_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
 
 for_scaler = StandardScaler(with_mean = True, with_std = True)
-
-
 X_for_scaled = for_scaler.fit_transform(X_for.values)
 
 
-
-
-#### Finding the good k for forwards
-#### Max number of clusters is 10
 ks = list(range(2, 11))
 elbow_for_res = [kmeans_wss(k,X_for_scaled) for k in ks]
 
@@ -136,7 +118,7 @@ plt.show()
 ## En este caso el optimal k sera 5 
 
 for_kmeans = KMeans(
-        n_clusters = 5,
+        n_clusters = 4,
         n_init = 25,
         max_iter = 100,
         random_state = 69,
@@ -147,17 +129,17 @@ forwards['cluster'] = for_kmeans.labels_
 
 forwards['cluster'].value_counts()
 
-forward_clusters = forwards[['Player', 'cluster']].sort_values(['cluster'])
+forward_clusters = forwards[['nombre', 'cluster']].sort_values(['cluster'])
 
 print(forward_clusters.to_string(index = False))
 
-barca_forwards = forwards[forwards['Squad'] == 'Barcelona']['Player'].to_list()
+barca_forwards = forwards[forwards['equipo'] == 'FC Barcelona']['nombre'].to_list()
 
 for player in barca_forwards:
-    player_idx = forwards[forwards['Player'] == player].index[0]
+    player_idx = forwards[forwards['nombre'] == player].index[0]
     player_cluster = forwards.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
-    same_cluster_mask = (forwards['cluster'] == player_cluster) & (forwards['Player'] != player)
+    same_cluster_mask = (forwards['cluster'] == player_cluster) & (forwards['nombre'] != player)
     cluster_mates = forwards[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
@@ -166,12 +148,10 @@ for player in barca_forwards:
     print(f"Result for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
-    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
+    print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
 
 
-
-#### Checar que no esta Lamine, haremos cambios en esto
 
 
 centers_transposed = for_kmeans.cluster_centers_.T
@@ -182,7 +162,6 @@ forward_results = pd.DataFrame({
     'Cluster 1': centers_transposed[:, 1],
     'Cluster 2': centers_transposed[:, 2],
     'Cluster 3': centers_transposed[:, 3],
-    'Cluster 4': centers_transposed[:, 4]
 })
 
 print(forward_results)
