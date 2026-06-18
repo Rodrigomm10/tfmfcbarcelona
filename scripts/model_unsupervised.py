@@ -11,6 +11,124 @@ from sklearn.decomposition import PCA
 
 # Function to see the goodness of the K
 ## we will use 
+### Helper Functions
+
+def plot_player_radar(dfs_list, index, feature_cols):
+    # Funcion para graficar el radar
+    df = dfs_list[index]
+    target_player = df.iloc[0]
+    matches = df.iloc[1:]
+    
+    labels = feature_cols
+    num_vars = len(labels)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1]  
+    
+    fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=dict(polar=True))
+    
+    colors = ['#1d3557', '#e63946', '#2a9d8f', '#a8dadc', '#f4a261', '#457b9d']
+    
+    target_values = target_player[labels].values.flatten().tolist()
+    target_values += target_values[:1]
+    
+    ax.plot(angles, target_values, color=colors[0], linewidth=3, linestyle='-', 
+            label=f"TARGET: {target_player['nombre']} ({target_player['equipo']})")
+    ax.fill(angles, target_values, color=colors[0], alpha=0.15)
+    
+    for i, (_, match) in enumerate(matches.iterrows()):
+        match_values = match[labels].values.flatten().tolist()
+        match_values += match_values[:1]
+        
+        color = colors[i + 1] 
+        
+        ax.plot(angles, match_values, color=color, linewidth=1.5, linestyle='--', alpha=0.8,
+                label=f"Match {i+1}: {match['nombre']} ({match['equipo']}) | Dist: {match['Statistic_compatibility']:.2f}")
+    
+    ax.set_theta_offset(np.pi / 2)  
+    ax.set_theta_direction(-1)       
+    
+    plt.xticks(angles[:-1], labels, color='grey', size=10)
+    
+    plt.title(f"Stylistic Comparison Matrix: {target_player['nombre']}", size=16, color='#1d3557', y=1.1, weight='bold')
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2, frameon=True, shadow=True)
+    
+    plt.tight_layout()
+    plt.show()
+
+
+
+def plot_player_radar_scaled(dfs_list, index, feature_cols, full_dataset):
+    # 1. Extract the specific player dataset from your list
+    df = dfs_list[index]
+    target_player = df.iloc[0]
+    matches = df.iloc[1:]
+    
+    # 2. Set up radar circular geometry
+    labels = feature_cols
+    num_vars = len(labels)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1] # Close the polygon loop
+    
+    # Initialize the figure with polar projection
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
+    
+    # Color palette: Target is dark navy, twins are distinctly colored
+    colors = ['#1d3557', '#e63946', '#2a9d8f', '#b5e2fa', '#f4a261', '#6a4c93']
+    
+    # 3. Calculate global min and max boundaries for normalization
+    mins = full_dataset[labels].min().astype(float)
+    maxs = full_dataset[labels].max().astype(float)
+    
+    def normalize(row):
+        # Maps raw numbers cleanly onto a universal 0.0 to 1.0 boundary scale
+        row_vals = row[labels].astype(float)
+        return (row_vals - mins) / (maxs - mins + 1e-5)
+
+    # 4. Process and Plot Target Player (Baseline)
+    target_norm = normalize(target_player).values.flatten().tolist()
+    target_norm += target_norm[:1]
+    
+    ax.plot(angles, target_norm, color=colors[0], linewidth=3.5, linestyle='-', 
+            label=f"TARGET: {target_player['nombre']} ({target_player['equipo']})")
+    ax.fill(angles, target_norm, color=colors[0], alpha=0.18)
+    
+    # 5. Process and Plot the 5 Stylistic Twins
+    for i, (_, match) in enumerate(matches.iterrows()):
+        match_norm = normalize(match).values.flatten().tolist()
+        match_norm += match_norm[:1]
+        
+        color = colors[i + 1] 
+        ax.plot(angles, match_norm, color=color, linewidth=1.5, linestyle='--', alpha=0.8,
+                label=f"Match {i+1}: {match['nombre']} ({match['equipo']}) | Dist: {match['Statistic_compatibility']:.2f}")
+    
+    # 6. Generate Dynamic Reference Labels (Fixes the missing scale problem!)
+    reference_labels = []
+    for col in labels:
+        max_val = maxs[col]
+        # Appends the maximum raw league metric directly underneath the column name
+        reference_labels.append(f"{col}\n(Max: {max_val:.2f})")
+    
+    # 7. Aesthetics, Orientation, and Layout Tweaks
+    ax.set_theta_offset(np.pi / 2) # Force 12 o'clock start position
+    ax.set_theta_direction(-1)     # Make the wheel run clockwise
+    
+    ax.set_ylim(0, 1)              # Lock boundaries tightly between 0 and 1
+    ax.set_yticklabels([])         # Remove the confusing 0.2, 0.4 internal ring labels
+    
+    # Map the reference labels to the perimeter ticks with extra padding
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(reference_labels, color='#2b2d42', size=9, weight='bold')
+    ax.tick_params(axis='x', pad=22)
+    
+    # 8. Title and Multi-column Horizontal Legend
+    plt.title(f"Stylistic Comparison Matrix: {target_player['nombre']}", size=16, color='#1d3557', y=1.12, weight='bold')
+    
+    # Moves the legend box underneath the plot completely out of the way of the labels
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=2, frameon=True, shadow=True, fontsize=10)
+    
+    plt.tight_layout()
+    plt.show()
+
 
 def kmeans_wss(k, X):
     km = KMeans(
@@ -73,6 +191,8 @@ fw_features.write_parquet('data/raw/forwards.parquet')
 
 #############################
 
+
+
 for_cols = [
     "total_shots_per_90", "shots_on_target_per_90", "shots_off_target_per_90", 
     "goals_per_90", "goals_openplay_per_90", "goals_inside_box_per_90", 
@@ -82,7 +202,8 @@ for_cols = [
     "conversion_rate", "shot_accuracy", "pct_big_chances_scored"
 ]
 
-forwards = fw_features.to_pandas()
+#forwards = fw_features.to_pandas()
+forwards = pd.read_parquet('data/raw/forwards.parquet')
 
 #-------------------------------------------------------------------
 
@@ -147,24 +268,38 @@ print(forward_clusters.to_string(index = False))
 
 barca_forwards = forwards[forwards['equipo'] == 'FC Barcelona']['nombre'].to_list()
 
+forwards_dfs = []
+
 for player in barca_forwards:
     player_idx = forwards[forwards['nombre'] == player].index[0]
     player_cluster = forwards.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
+    target_player_df = forwards.loc[[player_idx]].copy()
+    target_player_df['Statistic_compatibility'] = 0.0  
     same_cluster_mask = (forwards['cluster'] == player_cluster) & (forwards['nombre'] != player)
     cluster_mates = forwards[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
+    dfs = forwards.loc[cluster_mates.index].copy()
     cluster_mates['distance_to_target'] = distances
+    dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
-    print(f"Result for {player}")
+    dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+for_cols  
+    matches_sliced = dfs_sorted[radar_cols]
+    target_sliced = target_player_df[radar_cols]
+    radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
+    forwards_dfs.append(radar_ready_df)
+    print(f"\nResult for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
     print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
 
 
+wingers = ['shots_on_target_per_90', 'goals_per_90', 'key_passes_per_90', 'shots_created_per_90','assists_per_90', 'successful_dribbles_per_90']
 
+plot_player_radar_scaled(forwards_dfs, 1, feature_cols = wingers, full_dataset = forwards)
 
 centers_transposed = for_kmeans.cluster_centers_.T
 
@@ -240,7 +375,7 @@ mid_cols = [
     "pct_pass_accuracy", "pct_pass_accuracy_opp_half"
 ]
 
-midfield = mf_features.to_pandas()
+midfield = pd.read_parquet('data/raw/midfielders.parquet')
 
 player_midfield = midfield['nombre'].astype(str)
 team_midfield = midfield['equipo'].astype(str)
@@ -325,7 +460,7 @@ for player in barca_midfield:
     distances = euclidean_distances(target_features, cluster_features).flatten()
     cluster_mates['distance_to_target'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
-    print(f"Result for {player}")
+    print(f"\nResult for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
     print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
@@ -405,7 +540,7 @@ df_features = defense.with_columns([
 
 df_features.write_parquet('data/raw/defense.parquet')
 
-defense = df_features.to_pandas()
+defense = pd.read_parquet('data/raw/defense.parquet')
 
 df_cols = [
     "clearances_per_90", "tackles_per_90", "tackles_won_per_90", "tackles_lost_per_90", 
@@ -562,6 +697,8 @@ gk_features = keeper.with_columns([
 
 gk_features.write_parquet('data/raw/goalkeeper.parquet')
 
+keeper = pd.read_parquet('data/raw/goalkeeper.parquet')
+
 
 gk_cols = [
     "saves_per_90", "saves_inside_box_per_90", "saves_outside_box_per_90", 
@@ -573,7 +710,6 @@ gk_cols = [
     "save_percentage", "pct_successful_distribution"
 ]
 
-keeper = gk_features.to_pandas() 
 
 player_keeper = keeper['nombre'].astype(str)
 team_keeper = keeper['equipo'].astype(str)
