@@ -371,30 +371,56 @@ plt.show()
 
 #--------------------------------------------------------------------------
 ### Defensas
-defense = players.filter(pl.col('Pos').is_in(['DF', 'DF,MF']))
-defense = defense.to_pandas()
-player_defense = defense['Player'].astype(str)
-team_defense = defense['Squad'].astype(str)
+df = df.with_columns((pl.col('Time Played') / 90.0).alias("90s"))
 
-for_cols = [
-    'On-Off',
-    '+/-90',
+
+defense = df.filter(( pl.col('posicion') == 'Defender' ) & (pl.col('Time Played') > 450.0))
+
+df_features = defense.with_columns([
+    # Per-90 Metrics
+    (pl.col("Total Clearances").cast(pl.Float64) / pl.col("90s")).alias("clearances_per_90"),
+    (pl.col("Total Tackles").cast(pl.Float64) / pl.col("90s")).alias("tackles_per_90"),
+    (pl.col("Tackles Won").cast(pl.Float64) / pl.col("90s")).alias("tackles_won_per_90"),
+    (pl.col("Tackles Lost").cast(pl.Float64) / pl.col("90s")).alias("tackles_lost_per_90"),
+    (pl.col("Interceptions").cast(pl.Float64) / pl.col("90s")).alias("interceptions_per_90"),
+    (pl.col("Blocks").cast(pl.Float64) / pl.col("90s")).alias("blocks_per_90"),
+    (pl.col("Blocked Shots").cast(pl.Float64) / pl.col("90s")).alias("blocked_shots_per_90"),
+    (pl.col("Aerial Duels won").cast(pl.Float64) / pl.col("90s")).alias("aerial_duels_won_per_90"),
+    (pl.col("Aerial Duels lost").cast(pl.Float64) / pl.col("90s")).alias("aerial_duels_lost_per_90"),
+    (pl.col("Ground Duels won").cast(pl.Float64) / pl.col("90s")).alias("ground_duels_won_per_90"),
+    (pl.col("Ground Duels lost").cast(pl.Float64) / pl.col("90s")).alias("ground_duels_lost_per_90"),
+    (pl.col("Recoveries").cast(pl.Float64) / pl.col("90s")).alias("recoveries_per_90"),
+    (pl.col("Successful Long Passes").cast(pl.Float64) / pl.col("90s")).alias("successful_long_passes_per_90"),
+    (pl.col("Successful Crosses & Corners").cast(pl.Float64) / pl.col("90s")).alias("successful_crosses_corners_per_90"),
+    (pl.col("Key Passes (Attempt Assists)").cast(pl.Float64) / pl.col("90s")).alias("key_passes_per_90"),
+    # Absolutes (Rare Events)
+    pl.col("Clearances Off the Line").cast(pl.Float64),
+    pl.col("Goals").cast(pl.Float64).alias("raw_goals"),
+    pl.col("Headed Goals").cast(pl.Float64).alias("raw_headed_goals"),
+    # Ratios
+    (pl.col("Aerial Duels won").cast(pl.Float64) / (pl.col("Aerial Duels won").cast(pl.Float64) + pl.col("Aerial Duels lost").cast(pl.Float64) + 1e-5)).alias("pct_aerial_duels_won"),
+    (pl.col("Tackles Won").cast(pl.Float64) / (pl.col("Total Tackles").cast(pl.Float64) + 1e-5)).alias("pct_successful_tackles")
+])
+
+
+df_features.write_parquet('data/raw/defense.parquet')
+
+defense = df_features.to_pandas()
+
+df_cols = [
+    "clearances_per_90", "tackles_per_90", "tackles_won_per_90", "tackles_lost_per_90", 
+    "interceptions_per_90", "blocks_per_90", "blocked_shots_per_90", 
+    "aerial_duels_won_per_90", "aerial_duels_lost_per_90", 
+    "ground_duels_won_per_90", "ground_duels_lost_per_90", "recoveries_per_90", 
+    "successful_long_passes_per_90", "successful_crosses_corners_per_90", "key_passes_per_90", 
+    "Clearances Off the Line", "raw_goals", "raw_headed_goals", 
+    "pct_aerial_duels_won", "pct_successful_tackles"
 ]
 
-engineered = [
-    'TklW',
-    'Int',
-    'Fls',
-    'CrdY',
-    'Crs',
-    'Ast',
-]
+player_defense = defense['nombre'].astype(str)
+team_defense = defense['equipo'].astype(str)
 
-for col in engineered:
-    defense[col + '/90'] = defense[col] / 90
-    for_cols.append(col + '/90')
-
-X_for = defense[for_cols].apply(pd.to_numeric, errors = 'coerce')
+X_for = defense[df_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
 
 
@@ -407,33 +433,25 @@ X_for_scaled = for_scaler.fit_transform(X_for.values)
 #### El número máximo de clusters es 10
 ks = list(range(2, 11))
 elbow_for_res = [kmeans_wss(k,X_for_scaled) for k in ks]
-
-
 df_res_for = pd.DataFrame({
    'k': ks,
    'wss': elbow_for_res,
    'pos': 'df'
    })
-
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_res_for, x="k", y="wss", marker="o", linewidth=2.5, markersize=8)
-
 plt.xticks(df_res_for["k"])
 plt.title("Elbow Method for Optimal k", fontweight="bold", pad=15)
 plt.show()
 
 
 sil_for_val = [silhouette_for_k(k, X_for_scaled) for k in ks]
-
 df_sil_for = pd.DataFrame({
    'k': ks,
    'sil': sil_for_val,
    'pos': 'df'
    })
-
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_sil_for, x="k", y="sil", marker="o", linewidth=2.5, markersize=8)
@@ -442,9 +460,9 @@ plt.title("Silhouette Score for K", fontweight="bold", pad=15)
 plt.show()
 
 
-## En este caso el optimal k sera 4
+## En este caso el optimal k sera 3
 for_kmeans = KMeans(
-       n_clusters = 4,
+       n_clusters = 3,
        n_init = 25,
        max_iter = 100,
        random_state = 69,
@@ -452,16 +470,14 @@ for_kmeans = KMeans(
        ).fit(X_for_scaled)
 
 defense['cluster'] = for_kmeans.labels_
-
 defense['cluster'].value_counts()
 
-barca_defense = defense[defense['Squad'] == 'Barcelona']['Player'].to_list()
-
+barca_defense = defense[defense['equipo'] == 'FC Barcelona']['nombre'].to_list()
 for player in barca_defense:
-    player_idx = defense[defense['Player'] == player].index[0]
+    player_idx = defense[defense['nombre'] == player].index[0]
     player_cluster = defense.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
-    same_cluster_mask = (defense['cluster'] == player_cluster) & (defense['Player'] != player)
+    same_cluster_mask = (defense['cluster'] == player_cluster) & (defense['nombre'] != player)
     cluster_mates = defense[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
@@ -470,7 +486,7 @@ for player in barca_defense:
     print(f"Result for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
-    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
+    print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
 defense_clusters = defense[['Player', 'cluster']].sort_values(['cluster'])
 
@@ -480,11 +496,10 @@ centers_transposed = for_kmeans.cluster_centers_.T
 
 
 defense_results = pd.DataFrame({
-   'Feature': for_cols,
+   'Feature': df_cols,
    'Cluster 0': centers_transposed[:, 0],
    'Cluster 1': centers_transposed[:, 1],
    'Cluster 2': centers_transposed[:, 2],
-   'Cluster 3': centers_transposed[:, 3]
 })
 
 
@@ -514,25 +529,58 @@ plt.show()
 
 #--------------------------------------------------------------------------
 ### Porteros
-keeper = players.filter(pl.col('Pos').is_in(['GK']))
-keeper = keeper.to_pandas()
-player_keeper = keeper['Player'].astype(str)
-team_keeper = keeper['Squad'].astype(str)
 
-for_cols = [
-    'Save%',
-    'GA90',
-    'CS%',
-    'PKsv',
-    'SoTA',
-    'GA',
-    'W',
-    'L',
+
+keeper = df.filter(( pl.col('posicion') == 'Goalkeeper' ) & (pl.col('Time Played') > 450.0))
+
+gk_features = keeper.with_columns([
+    # Per-90 Metrics
+    (pl.col("Saves Made").cast(pl.Float64) / pl.col("90s")).alias("saves_per_90"),
+    (pl.col("Saves Made from Inside Box").cast(pl.Float64) / pl.col("90s")).alias("saves_inside_box_per_90"),
+    (pl.col("Saves Made from Outside Box").cast(pl.Float64) / pl.col("90s")).alias("saves_outside_box_per_90"),
+    (pl.col("Goals Conceded").cast(pl.Float64) / pl.col("90s")).alias("goals_conceded_per_90"),
+    (pl.col("Goals Conceded Inside Box").cast(pl.Float64) / pl.col("90s")).alias("goals_conceded_inside_per_90"),
+    (pl.col("Goals Conceded Outside Box").cast(pl.Float64) / pl.col("90s")).alias("goals_conceded_outside_per_90"),
+    (pl.col("GK Successful Distribution").cast(pl.Float64) / pl.col("90s")).alias("gk_success_dist_per_90"),
+    (pl.col("GK Unsuccessful Distribution").cast(pl.Float64) / pl.col("90s")).alias("gk_unsuccess_dist_per_90"),
+    (pl.col("Goal Kicks").cast(pl.Float64) / pl.col("90s")).alias("goal_kicks_per_90"),
+    (pl.col("Punches").cast(pl.Float64) / pl.col("90s")).alias("punches_per_90"),
+    (pl.col("Catches").cast(pl.Float64) / pl.col("90s")).alias("catches_per_90"),
+    (pl.col("Drops").cast(pl.Float64) / pl.col("90s")).alias("drops_per_90"),
+    (pl.col("Crosses not Claimed").cast(pl.Float64) / pl.col("90s")).alias("crosses_not_claimed_per_90"),
+    (pl.col("Goalkeeper Smother").cast(pl.Float64) / pl.col("90s")).alias("smothers_per_90"),
+    # Absolutes (Unscaled)
+    pl.col("Clean Sheets").cast(pl.Float64),
+    pl.col("Penalties Faced").cast(pl.Float64),
+    pl.col("Penalties Saved").cast(pl.Float64),
+    pl.col("Saves from Penalty").cast(pl.Float64),
+    # Ratios
+    (pl.col("Saves Made").cast(pl.Float64) / (pl.col("Saves Made").cast(pl.Float64) + pl.col("Goals Conceded").cast(pl.Float64) + 1e-5)).alias("save_percentage"),
+    (pl.col("GK Successful Distribution").cast(pl.Float64) / (pl.col("GK Successful Distribution").cast(pl.Float64) + pl.col("GK Unsuccessful Distribution").cast(pl.Float64) + 1e-5)).alias("pct_successful_distribution")
+])
+
+
+gk_features.write_parquet('data/raw/goalkeeper.parquet')
+
+
+gk_cols = [
+    "saves_per_90", "saves_inside_box_per_90", "saves_outside_box_per_90", 
+    "goals_conceded_per_90", "goals_conceded_inside_per_90", "goals_conceded_outside_per_90", 
+    "gk_success_dist_per_90", "gk_unsuccess_dist_per_90", "goal_kicks_per_90", 
+    "punches_per_90", "catches_per_90", "drops_per_90", 
+    "crosses_not_claimed_per_90", "smothers_per_90", 
+    "Clean Sheets", "Penalties Faced", "Penalties Saved", "Saves from Penalty", 
+    "save_percentage", "pct_successful_distribution"
 ]
+
+keeper = gk_features.to_pandas() 
+
+player_keeper = keeper['nombre'].astype(str)
+team_keeper = keeper['equipo'].astype(str)
 
 #Acá tendremos que agregar stats por 90mins
 
-X_for = keeper[for_cols].apply(pd.to_numeric, errors = 'coerce')
+X_for = keeper[gk_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
 
 
@@ -542,18 +590,13 @@ for_scaler = StandardScaler(with_mean = True, with_std = True)
 X_for_scaled = for_scaler.fit_transform(X_for.values)
 
 
-#### El número máximo de clusters es 10
 ks = list(range(2, 11))
 elbow_for_res = [kmeans_wss(k,X_for_scaled) for k in ks]
-
-
 df_res_for = pd.DataFrame({
    'k': ks,
    'wss': elbow_for_res,
    'pos': 'gk'
    })
-
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_res_for, x="k", y="wss", marker="o", linewidth=2.5, markersize=8)
@@ -563,15 +606,11 @@ plt.show()
 
 
 sil_for_val = [silhouette_for_k(k, X_for_scaled) for k in ks]
-
-
 df_sil_for = pd.DataFrame({
    'k': ks,
    'sil': sil_for_val,
    'pos': 'gk'
    })
-
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_sil_for, x="k", y="sil", marker="o", linewidth=2.5, markersize=8)
@@ -580,9 +619,9 @@ plt.title("Silhouette Score for K", fontweight="bold", pad=15)
 plt.show()
 
 
-## En este caso el optimal k sera 3
+## En este caso el optimal k sera 6
 for_kmeans = KMeans(
-       n_clusters = 5,
+       n_clusters = 6,
        n_init = 25,
        max_iter = 100,
        random_state = 69,
@@ -595,12 +634,12 @@ keeper['cluster'] = for_kmeans.labels_
 
 keeper['cluster'].value_counts()
 
-barca_keeper = keeper[keeper['Squad'] == 'Barcelona']['Player'].to_list()
+barca_keeper = keeper[keeper['equipo'] == 'FC Barcelona']['nombre'].to_list()
 for player in barca_keeper:
-    player_idx = keeper[keeper['Player'] == player].index[0]
+    player_idx = keeper[keeper['nombre'] == player].index[0]
     player_cluster = keeper.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
-    same_cluster_mask = (keeper['cluster'] == player_cluster) & (keeper['Player'] != player)
+    same_cluster_mask = (keeper['cluster'] == player_cluster) & (keeper['nombre'] != player)
     cluster_mates = keeper[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
@@ -609,7 +648,7 @@ for player in barca_keeper:
     print(f"Result for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
-    print(top_5_matches[['Player', 'Squad', 'distance_to_target']].to_string(index=False))
+    print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
 keeper_clusters = keeper[['Player', 'cluster']].sort_values(['cluster'])
 
@@ -621,10 +660,13 @@ centers_transposed = for_kmeans.cluster_centers_.T
 
 
 keeper_results = pd.DataFrame({
-   'Feature': for_cols,
+   'Feature': gk_cols,
    'Cluster 0': centers_transposed[:, 0],
    'Cluster 1': centers_transposed[:, 1],
-   'Cluster 2': centers_transposed[:, 2]
+   'Cluster 2': centers_transposed[:, 2], 
+   'Cluster 3': centers_transposed[:, 3],
+   'Cluster 4': centers_transposed[:, 4],
+   'Cluster 5': centers_transposed[:, 5]
 })
 
 
