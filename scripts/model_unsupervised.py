@@ -192,7 +192,6 @@ fw_features.write_parquet('data/raw/forwards.parquet')
 #############################
 
 
-
 for_cols = [
     "total_shots_per_90", "shots_on_target_per_90", "shots_off_target_per_90", 
     "goals_per_90", "goals_openplay_per_90", "goals_inside_box_per_90", 
@@ -269,7 +268,6 @@ print(forward_clusters.to_string(index = False))
 barca_forwards = forwards[forwards['equipo'] == 'FC Barcelona']['nombre'].to_list()
 
 forwards_dfs = []
-
 for player in barca_forwards:
     player_idx = forwards[forwards['nombre'] == player].index[0]
     player_cluster = forwards.loc[player_idx, 'cluster']
@@ -297,9 +295,28 @@ for player in barca_forwards:
 
 
 
-wingers = ['shots_on_target_per_90', 'goals_per_90', 'key_passes_per_90', 'shots_created_per_90','assists_per_90', 'successful_dribbles_per_90']
+wingers = ['shots_on_target_per_90', 'goals_per_90', 'key_passes_per_90', 'shots_created_per_90','assists_per_90', 'successful_dribbles_per_90', 'total_shots_per_90', 'shots_off_target_per_90', 'big_chances_scored_per_90', 'big_chances_missed_per_90', 'shot_accuracy']
 
-plot_player_radar_scaled(forwards_dfs, 1, feature_cols = wingers, full_dataset = forwards)
+striker = [
+    "total_shots_per_90",
+    "shots_on_target_per_90",
+    "shots_off_target_per_90",
+    "goals_per_90",
+    "goals_openplay_per_90",
+    "goals_inside_box_per_90",
+    "big_chances_scored_per_90",
+    "big_chances_missed_per_90",
+    "conversion_rate",
+    "shot_accuracy",
+]
+
+for df in forwards_dfs:
+    df.fillna(0, inplace = True)
+
+
+plot_player_radar_scaled(forwards_dfs, 5, feature_cols = striker, full_dataset = forwards)
+
+
 
 centers_transposed = for_kmeans.cluster_centers_.T
 
@@ -346,6 +363,9 @@ mf_features = midfield.with_columns([
     (pl.col("Successful Long Passes").cast(pl.Float64) / pl.col("90s")).alias("successful_long_passes_per_90"),
     (pl.col("Forward Passes").cast(pl.Float64) / pl.col("90s")).alias("forward_passes_per_90"),
     (pl.col("Successful Passes Opposition Half").cast(pl.Float64) / pl.col("90s")).alias("successful_passes_opp_half_per_90"),
+    (pl.col("Shots On Target ( inc goals )").cast(pl.Float64) / pl.col("90s")).alias("shots_on_target_per_90"),
+    (pl.col("Goals").cast(pl.Float64) / pl.col("90s")).alias("goals_per_90"),
+    (pl.col("Goal Assists").cast(pl.Float64) / pl.col("90s")).alias("assists_per_90"),
     (pl.col("Through balls").cast(pl.Float64) / pl.col("90s")).alias("through_balls_per_90"),
     (pl.col("Progressive Carries").cast(pl.Float64) / pl.col("90s")).alias("progressive_carries_per_90"),
     (pl.col("Key Passes (Attempt Assists)").cast(pl.Float64) / pl.col("90s")).alias("key_passes_per_90"),
@@ -372,7 +392,7 @@ mid_cols = [
     "key_passes_per_90", "shots_created_per_90", "tackles_won_per_90", 
     "interceptions_per_90", "recoveries_per_90", "box_touches_per_90", 
     "final_third_touches_per_90", "total_shots_per_90", "big_chances_created_per_90", 
-    "pct_pass_accuracy", "pct_pass_accuracy_opp_half"
+    "pct_pass_accuracy", "pct_pass_accuracy_opp_half", "goals_per_90", "shots_on_target_per_90", 'assists_per_90'
 ]
 
 midfield = pd.read_parquet('data/raw/midfielders.parquet')
@@ -391,25 +411,15 @@ mid_scaler = StandardScaler(with_mean = True, with_std = True)
 
 X_for_scaled = mid_scaler.fit_transform(X_for.values)
 
-pca =  PCA(n_components = 0.95, random_state = 69)
-
-X_for_pca =  pca.fit_transform(X_for_scaled)
-
-print(f"Original number of features: {X_for_scaled.shape[1]}")
-print(f"Reduced number of features (PCs): {X_for_pca.shape[1]}")
-print(f"Total variance explained: {np.sum(pca.explained_variance_ratio_):.2%}")
 
 #### El número máximo de clusters es 10
 ks = list(range(2, 11))
-elbow_for_res = [kmeans_wss(k,X_for_pca) for k in ks]
-
-
+elbow_for_res = [kmeans_wss(k,X_for_scaled) for k in ks]
 df_res_for = pd.DataFrame({
    'k': ks,
    'wss': elbow_for_res,
    'pos': 'mf'
    })
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_res_for, x="k", y="wss", marker="o", linewidth=2.5, markersize=8)
@@ -417,16 +427,12 @@ plt.xticks(df_res_for["k"])
 plt.title("Elbow Method for Optimal k", fontweight="bold", pad=15)
 plt.show()
 
-sil_for_val = [silhouette_for_k(k, X_for_pca) for k in ks]
-
-
+sil_for_val = [silhouette_for_k(k, X_for_scaled) for k in ks]
 df_sil_for = pd.DataFrame({
    'k': ks,
    'sil': sil_for_val,
    'pos': 'mf'
    })
-
-
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(7, 4.5))
 sns.lineplot(data=df_sil_for, x="k", y="sil", marker="o", linewidth=2.5, markersize=8)
@@ -448,26 +454,37 @@ midfield['cluster'] = for_kmeans.labels_
 
 
 midfield['cluster'].value_counts()
+
 barca_midfield = midfield[midfield['equipo'] == 'FC Barcelona']['nombre'].to_list()
 
+midfield_dfs = []
 for player in barca_midfield:
     player_idx = midfield[midfield['nombre'] == player].index[0]
     player_cluster = midfield.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
+    target_player_df = midfield.loc[[player_idx]].copy()
+    target_player_df['Statistic_compatibility'] = 0.0  
     same_cluster_mask = (midfield['cluster'] == player_cluster) & (midfield['nombre'] != player)
     cluster_mates = midfield[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
+    dfs = midfield.loc[cluster_mates.index].copy()
     cluster_mates['distance_to_target'] = distances
+    dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
+    dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+mid_cols  
+    matches_sliced = dfs_sorted[radar_cols]
+    target_sliced = target_player_df[radar_cols]
+    radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
+    midfield_dfs.append(radar_ready_df)
     print(f"\nResult for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
     print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
+
 midfield_clusters = midfield[['Player', 'cluster']].sort_values(['cluster'])
-
-
 print(midfield_clusters.to_string(index = False))
 
 
@@ -480,6 +497,42 @@ midfield_results = pd.DataFrame({
    'Cluster 1': centers_transposed[:, 1],
    'Cluster 2': centers_transposed[:, 2],
 })
+
+
+#-----------------------------------
+
+offensive_mid = [
+    "box_touches_per_90",
+    "final_third_touches_per_90",
+    "total_shots_per_90",
+    "big_chances_created_per_90",
+    "through_balls_per_90",
+    "progressive_carries_per_90",
+    "key_passes_per_90",
+    "shots_created_per_90",
+    "shots_on_target_per_90",
+    "goals_per_90",
+    "assists_per_90",
+]
+defensive_mid = [
+    "total_passes_per_90",
+    "successful_long_passes_per_90",
+    "forward_passes_per_90",
+    "successful_passes_opp_half_per_90",
+    "progressive_carries_per_90",
+    "tackles_won_per_90",
+    "interceptions_per_90",
+    "recoveries_per_90",
+    "pct_pass_accuracy",
+    "pct_pass_accuracy_opp_half",
+    "key_passes_per_90",
+    "shots_created_per_90",
+]
+
+
+plot_player_radar_scaled(midfield_dfs, 5, feature_cols = defensive_mid, full_dataset = midfield)
+
+#-----------------------------------
 
 
 print(midfield_results)
@@ -511,11 +564,15 @@ df = df.with_columns((pl.col('Time Played') / 90.0).alias("90s"))
 
 defense = df.filter(( pl.col('posicion') == 'Defender' ) & (pl.col('Time Played') > 450.0))
 
+
 df_features = defense.with_columns([
     # Per-90 Metrics
     (pl.col("Total Clearances").cast(pl.Float64) / pl.col("90s")).alias("clearances_per_90"),
     (pl.col("Total Tackles").cast(pl.Float64) / pl.col("90s")).alias("tackles_per_90"),
     (pl.col("Tackles Won").cast(pl.Float64) / pl.col("90s")).alias("tackles_won_per_90"),
+    (pl.col("Final Third Touches").cast(pl.Float64) / pl.col("90s")).alias("final_third_touches_per_90"),
+    (pl.col("Goal Assists").cast(pl.Float64) / pl.col("90s")).alias("assists_per_90"),
+    (pl.col("Total Successful Passes ( Excl Crosses & Corners ) ").cast(pl.Float64) / (pl.col("Total Passes").cast(pl.Float64) + 1e-5)).alias("pct_pass_accuracy"),
     (pl.col("Tackles Lost").cast(pl.Float64) / pl.col("90s")).alias("tackles_lost_per_90"),
     (pl.col("Interceptions").cast(pl.Float64) / pl.col("90s")).alias("interceptions_per_90"),
     (pl.col("Blocks").cast(pl.Float64) / pl.col("90s")).alias("blocks_per_90"),
@@ -549,7 +606,7 @@ df_cols = [
     "ground_duels_won_per_90", "ground_duels_lost_per_90", "recoveries_per_90", 
     "successful_long_passes_per_90", "successful_crosses_corners_per_90", "key_passes_per_90", 
     "Clearances Off the Line", "raw_goals", "raw_headed_goals", 
-    "pct_aerial_duels_won", "pct_successful_tackles"
+    "pct_aerial_duels_won", "pct_successful_tackles", "assists_per_90", "final_third_touches_per_90", "pct_pass_accuracy"
 ]
 
 player_defense = defense['nombre'].astype(str)
@@ -608,23 +665,41 @@ defense['cluster'] = for_kmeans.labels_
 defense['cluster'].value_counts()
 
 barca_defense = defense[defense['equipo'] == 'FC Barcelona']['nombre'].to_list()
+
+defense_dfs = []
 for player in barca_defense:
     player_idx = defense[defense['nombre'] == player].index[0]
     player_cluster = defense.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
+    target_player_df = defense.loc[[player_idx]].copy()
+    target_player_df['Statistic_compatibility'] = 0.0  
     same_cluster_mask = (defense['cluster'] == player_cluster) & (defense['nombre'] != player)
     cluster_mates = defense[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
+    dfs = defense.loc[cluster_mates.index].copy()
     cluster_mates['distance_to_target'] = distances
+    dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
-    print(f"Result for {player}")
+    dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+df_cols 
+    matches_sliced = dfs_sorted[radar_cols]
+    target_sliced = target_player_df[radar_cols]
+    radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
+    defense_dfs.append(radar_ready_df)
+    print(f"\nResult for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
     print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
-defense_clusters = defense[['Player', 'cluster']].sort_values(['cluster'])
 
+##-----------------------------------
+
+
+##-----------------------------------
+
+
+defense_clusters = defense[['Player', 'cluster']].sort_values(['cluster'])
 print(defense_clusters.to_string(index = False))
 
 centers_transposed = for_kmeans.cluster_centers_.T
