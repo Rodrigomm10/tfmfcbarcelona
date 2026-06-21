@@ -841,35 +841,60 @@ for_kmeans = KMeans(
 
 
 keeper['cluster'] = for_kmeans.labels_
-
-
 keeper['cluster'].value_counts()
 
 barca_keeper = keeper[keeper['equipo'] == 'FC Barcelona']['nombre'].to_list()
+
+keeper_dfs = []
 for player in barca_keeper:
     player_idx = keeper[keeper['nombre'] == player].index[0]
     player_cluster = keeper.loc[player_idx, 'cluster']
     target_features = X_for_scaled[player_idx].reshape(1, -1)
+    target_player_df = keeper.loc[[player_idx]].copy()
+    target_player_df['Statistic_compatibility'] = 0.0  
     same_cluster_mask = (keeper['cluster'] == player_cluster) & (keeper['nombre'] != player)
     cluster_mates = keeper[same_cluster_mask].copy()
     cluster_features = X_for_scaled[cluster_mates.index]
     distances = euclidean_distances(target_features, cluster_features).flatten()
+    dfs = keeper.loc[cluster_mates.index].copy()
     cluster_mates['distance_to_target'] = distances
+    dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
-    print(f"Result for {player}")
+    dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+df_cols 
+    matches_sliced = dfs_sorted[radar_cols]
+    target_sliced = target_player_df[radar_cols]
+    radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
+    keeper_dfs.append(radar_ready_df)
+    print(f"\nResult for {player}")
     print(f"Assigned Cluster: {player_cluster}")
     print(f"Top 5 closest stylistic matches within the cluster:")
     print(top_5_matches[['nombre', 'equipo', 'distance_to_target']].to_string(index=False))
 
+
+#-----------------------------
+keeper_0 = [
+    "saves_per_90",
+    "goals_conceded_per_90",
+    "goals_conceded_inside_per_90",
+    "goals_conceded_outside_per_90",
+    "punches_per_90",
+    "catches_per_90",
+    "drops_per_90",
+    "penalties_faced",
+    "penalties_saved",
+    "clean_sheets",
+    "save_percentage",
+]
+
+#-----------------------------
+
+
 keeper_clusters = keeper[['Player', 'cluster']].sort_values(['cluster'])
-
-
 print(keeper_clusters.to_string(index = False))
 
 
 centers_transposed = for_kmeans.cluster_centers_.T
-
-
 keeper_results = pd.DataFrame({
    'Feature': gk_cols,
    'Cluster 0': centers_transposed[:, 0],
@@ -879,8 +904,6 @@ keeper_results = pd.DataFrame({
    'Cluster 4': centers_transposed[:, 4],
    'Cluster 5': centers_transposed[:, 5]
 })
-
-
 print(keeper_results)
 
 ### Miramos los resultados

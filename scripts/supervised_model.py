@@ -3,48 +3,67 @@ import polars as pl
 #-----------------------------
 # Arreglar los datos
 
-players = (pl.scan_csv('data/raw/players_data-2025_2026.csv')
-           .select(pl.col('Player').unique())).collect()
+forwards = (
+        pl.scan_parquet('data/raw/forwards.parquet')
+        .with_columns(
+            pl.col('nombre')
+            .str.replace(r"\.", "")
+            .str.to_lowercase()
+            .str.split(" ")
+            )
+        .with_columns([
+            pl.col('nombre').list.get(0).str.slice(0,1).alias("first"),
+            pl.col('nombre').list.get(-1).alias("last_name")
+            ])
+        )
 
-players = players['Player'].to_list()
-
-players_ids = (
+player_ids = (
         pl.scan_csv('data/raw/players.csv')
-        .filter(pl.col('name').is_in(players))
         .select(['player_id', 'name'])
-        ).collect()
+        .with_columns(
+            pl.col('name')
+            .str.to_lowercase()
+            .str.split(" ")
+            )
+        .with_columns([
+            pl.col('name').list.get(0).str.slice(0,1).alias("first"),
+            pl.col('name').list.get(-1).alias("last_name")
+            ])
+        .unique(subset=['first', 'last_name'], keep = 'first')
+        )
 
-players_ids_list = players_ids['player_id'].to_list()
+forwards = forwards.join(
+        player_ids,
+        on = ['first', 'last_name'],
+        how = "inner"
+        )
 
 
 market_valuations = (
         pl.scan_csv('data/raw/player_valuations.csv', try_parse_dates = True)
-        .filter(pl.col('player_id').is_in(players_ids_list))
-        ).collect()
+        .join(
+            forwards.select('player_id'),
+            on = 'player_id',
+            how = 'inner'
+            )
+        .sort('date')
+        .unique(subset = ['player_id'], keep = 'last', maintain_order = True)
+        )
 
-market_valuations = market_valuations.join(
-        players_ids,
+final_plan = market_valuations.join(
+        forwards,
         on = 'player_id',
         how = 'inner'
         )
 
-market_valuations = (
-        market_valuations.sort('date')
-        .unique(subset = ['name'], keep = 'last', maintain_order = True)
-        )
+forwards_df = final_plan.collect()
 
-stats = (pl.scan_csv('data/raw/players_data-2025_2026.csv')).collect()
-
-market_valuations = market_valuations.join(
-        stats,
-        left_on = 'name',
-        right_on = 'Player',
-        how = 'inner'
-        )
-
-
-market_valuations.write_csv('data/raw/market_valuations_sl.csv')
-
+print(
+    forwards_df.group_by("nombre")
+    .count()
+    .filter(pl.col("count") > 1)
+    .sort("count", descending=True)
+)
 
 
 #----------------------------------------------------
