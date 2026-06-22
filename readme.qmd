@@ -5,11 +5,96 @@ format:
   gfm
 jupyter: python3
 ---
-*Documentar el proyecto como que fuera un word.
 
-# FC Barcelona – Dashboard Analítico (TFM)
 
-Dashboard web local para análisis de datos del FC Barcelona.
+# Resumen del Proyecto
+Este repositorio contiene el Trabajo de Fin de Master (TFM) Scouting del FC Barcelona, en análisis de big data deportivo, cuyo objetivo principal es el desarrollo de un dashboard interactivo en un (local host) orientado al análisis y la simulación de la ventana de fichajes para el FC Barcelona a partir de evidencia estadística de la temporada 2025/26 de las cinco grandes ligas de Europa (España, Inglaterra, Italia, Portugal y Francia).
+
+La herramienta integra datos procedentes de múltiples fuentes, públicas y bases de datos que fueron proveídos por la universidad para el desarrollo del proyecto. Entre las fuentes públicas utilicé Kaggle, FBref, Transfermarkt, Understat y Sofascore. Las fuentes de daatos fueron combinadas y analizadas, para posteriormente ser limpiadas para su correcta interpretación para el análisis posterior. Uno de los diferenciadores principales del trabajo es haber realizado un modelo de machine learning no supervisadoss que identifica perfiles de jugadores estilísticamente comparables a los de las plantilla actual del club, basados puramente en sus estadísticas durante la temporada. De De este modo, el sistema no se limita a describir el rendimiento, sino que propone candidatos de sustitución o refuerzo fundamentados en la similitud de su huella estadística.
+
+El proyecto se estructura principalmente en tres capas: (1) captura y procesamiento de datos (ETL), para la limpieza y armonización de las fuentes, (2) modelización, que comprende un componente no supervisado de segmentación de jugadores y un componente supervisado de valor de mercado y (3) presentación, que es el dashboard web como un "local host".
+
+
+
+## Naturaleza del trabajo
+El propósito analítico es exploratorio y para apoyo a toma de decisiones basadas en datos y estadísticas. El modelo no pretende sustituir el criterio técnico del cuerpo deportivo, sino aportar un criterio objetivo y reproducible que reduzca el tiempo de búsqueda de candidatos y pueda dar los perfiles más adecuados para el juego.
+
+
+# Estructura y canalización de los datos
+La estructura de la información cuenta con varios scripts. Cada uno de los scripts produce archivos en formatos (`.json` y/o `.parquet`) que garantizan que el dashboard pueda servirse sin dependencia de conexión en tiempo de ejecución.
+
+En listado del scipt y su función son los siguientes:
+Script | Función
+`01_process_data.py` | Limpieza y filtrado de los CSV de Kaggle (partidos, jugadores, transferencias, valoraciones).
+`02_fetch_understat.py` | Descarga de métricas de expectativa (xG, xGA, NPxG, xPTS) desde Understat.
+`03_fetch_epl_detail.py` | Cacheado de la API pública de la Premier League (plantillas, estadísticas, partidos).
+`04_fetch_epl_understat_squads.py` | Fusión de jugadores Understat con metadatos de la PL API.
+`05_generate_league_team_details.py` | Generación de detalle por equipo para LaLiga, Bundesliga, Serie A y Ligue 1.
+`06_fetch_sofascore_squads.py` | Enriquecimiento con dorsales y posiciones oficiales (Sofascore).
+`model_unsupervised.py` | Segmentación de jugadores por posición y búsqueda de perfiles comparables.
+`supervised_model.py` | Preparación del conjunto de entrenamiento para la estimación de valor.
+
+
+
+## Fuentes de datos
+1. Kaggle / FBref: ndicadores clave de rendimiento (KPI) y estadísticas base por jugador (temporada 2025/26).
+2. Transfermarkt (Kaggle): Resultados de partidos, historial de transferencias y valoraciones de mercado.
+3. Understat: Métricas de expectativa a nivel de equipo y de partido (xG, xGA, NPxG, xPTS), que permiten contextualizar el rendimiento más allá del resultado.
+4. Premier League API (PulseLive) y Sofascore: Ddatos de plantilla (dorsal, posición oficial, nacionalidad).
+
+
+# Procesamiento de datos
+Este script constituye la base del proyecto. Lo que hace principalmente es transformar los CSV de Kaggle en formato `.json` utilizables por el dashboard, aplicando filtros relativos al FC Barcelona y a las competiciones relevantes.
+
+Las operaciones principales son: 
+1. Procesamiento de partidos (`games.csv`): Se filtran los partidos de la temporada 2025/26 y se calcula el resultado relativo al Barça (victoria, empate o derrota) en función de su condición de local o visitante. Los partidos se segmentan posteriormente por competición (LaLiga, Champions League, Copa del Rey, Supercopa).
+2. Procesamiento de jugadores (`players_data-2025_2026.csv`): Se extraen tanto un conjunto de columnas base como uno de estadísticas avanzadas, y se conservan versiones para el conjunto global (comparativa entre ligas) y para la plantilla del Barça.
+3.Transferencias y valoraciones: Se identifican los movimientos de entrada y salida del club y se construye la serie temporal del valor de mercado agregado de la plantilla.
+4. Premier League (Understat): Se procesan las tablas clasificatorias (total, local y visitante) con métricas de expectativa, los datos por jugador y una reconstrucción de la progresión de puntos por jornada.
+
+
+
+## Coexistencia de Pandas y Polars
+El sctipt emplea simultáneamente 'pandas' y 'polars'. 'pandas' se utiliza para las transformaciones de compatibilidad directa a JSON, mientras que `polars` aporta una sintaxis declarativa y eficiente para el cálculo de expresiones condicionales (por ejemplo, el resultado relativo al Barça mediante `pl.when().then().otherwise()`). Se recomienda homogeneizar la gestión de rutas (uso consistente de `os.path.join` frente a separadores literales `\\`) para garantizar la portabilidad entre sistemas operativos.
+
+
+
+## Métricas de expectatica (`02_fetch_understat.py`)
+Recupera de Understat las métricas de expectativa por liga y equipo (xG, xGA, NPxG, xPTS). El script implementa una extracción de las variables JavaScript integradas en el HTML, priorizando la última temporada completa disponible (2025/26). Adicionalmente, descarga el detalle de partidos, jugadores y estadísticas del FC Barcelona.
+
+
+
+## Detalle de la Premier League (`03_fetch_epl_detail.py`) !!!!
+Inspecciona desde la API pública de la Premier League los veinte equipos de la temporada 2025/26. Recupera la plantilla completa, las estadísticas de equipo (con etiquetas traducidas al español) y los partidos disputados. Una decisión de diseño relevante es no filtrar por `currentTeam.id`, de modo que se incluya la totalidad de jugadores inscritos.
+
+
+
+## Armonización de identidades de jugador (`04`, `05` y `06`)
+Estos tres scripts abordan un problema recurrente y crítico en la integración de fuentes deportivas: la resolución de identidades, es decir, la correspondencia de un mismo jugador entre fuentes que escriben su nombre de forma distinta (con o sin tildes, con caracteres especiales, con nombre completo o apellido).
+
+
+# Modelo no supervisado (`model_unsupervised.py`)
+Este es el núcleo analítico del proyecto y por eso tiene un tratamiento detallado. El objetivo del modelo es **segmentar a los jugadores en clústers de juego** y, dentro de cada clúster, identificar para cada futbolista del FC Barcelona los perfiles estilísticamente más próximos del resto de las cinco grandes ligas europeas. El resultado es un sistema de recomendación de candidatos a fichaje basado en la similitud estadística.
+
+
+
+## Fundamento metodológico
+El enfoque combina tres técnicas clásicas del aprendizaje no supervisado y análisis multivariante:
+1. Estandarización (`StandardScaler`): Todas las variables se centran y se escalan en una varianza unitaria. Esto es imprescindible porque las métricas están en magnitudes muy dispares (pases totales por 90 minutos frente a porcentajes de acierto), y el agrupamiento por *k*-medias (k-means) se basa en distancias euclídeas, sensibles a la escala.
+2. Agrupamiento por *k*-medias** (`KMeans`): Separa el espacio de jugadores en *k* grupos o clústeres. La configuración del algoritmo (`n_init = 25`, `algorithm = "lloyd"`, semilla fija) prioriza la estabilidad y la reproducibilidad de los resultados.
+3. Distancia euclídea intra-clúster (`euclidean_distances`): Una vez asignados los clústeres, la cercanía estilística entre un jugador objetivo y sus pares se cuantifica como la distancia en el espacio estandarizado,denominada en el código *Statistic compatibility*.
+
+
+
+## Ingeniería de características por posición
+
+
+
+
+
+
+
+
 
 ## Requisitos
 
@@ -19,13 +104,13 @@ Dashboard web local para análisis de datos del FC Barcelona.
 
 
 # 1. Ir a la carpeta del proyecto
-cd "ruta/a/TFM Universidad Europea/barca-dashboard"
+cd "tfmfcbarcelona"
 
 # 2. Crear entorno virtual
 python3 -m venv venv
 
 # 3. Activar el entorno
-source venv/bin/activate
+source venvm/bin/activate
 
 # 4. Instalar dependencias
 pip install flask pandas requests beautifulsoup4
