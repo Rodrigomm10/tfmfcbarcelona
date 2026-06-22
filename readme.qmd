@@ -1,11 +1,11 @@
 ---
-title: ""
-author: ""
+title: "TFM Scouting - FC Barcelona"
+author: "Rodrigo Martinez"
 format:
   gfm
 jupyter: python3
 ---
-
+*Documentar el proyecto como que fuera un word.
 
 # FC Barcelona – Dashboard Analítico (TFM)
 
