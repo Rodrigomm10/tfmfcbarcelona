@@ -6,10 +6,17 @@ import polars as pl
 forwards = (
         pl.scan_parquet('data/raw/forwards.parquet')
         .with_columns(
-            pl.col('nombre')
-            .str.replace(r"\.", "")
-            .str.to_lowercase()
-            .str.split(" ")
+            [
+                pl.col('nombre')
+                .str.replace(r"\.", "")
+                .str.to_lowercase()
+                .str.split(" "),
+                pl.col('equipo')
+                .str.to_lowercase()
+                .str.split(" ")
+                .list.get(0)
+                .alias('club_key')
+                ]
             )
         .with_columns([
             pl.col('nombre').list.get(0).str.slice(0,1).alias("first"),
@@ -19,22 +26,28 @@ forwards = (
 
 player_ids = (
         pl.scan_csv('data/raw/players.csv')
-        .select(['player_id', 'name'])
+        .select(['player_id', 'name', 'date_of_birth', 'current_club_name'])
         .with_columns(
-            pl.col('name')
-            .str.to_lowercase()
-            .str.split(" ")
+            [
+                pl.col('name')
+                .str.to_lowercase()
+                .str.split(" "),
+                pl.col('current_club_name')
+                .str.to_lowercase()
+                .list.get(0)
+                .alias("club_key")
+                ]
             )
         .with_columns([
             pl.col('name').list.get(0).str.slice(0,1).alias("first"),
             pl.col('name').list.get(-1).alias("last_name")
             ])
-        .unique(subset=['first', 'last_name'], keep = 'first')
+        .unique(subset=['first', 'last_name', 'club_key'], keep = 'first')
         )
 
 forwards = forwards.join(
         player_ids,
-        on = ['first', 'last_name'],
+        on = ['first', 'last_name', 'club_key'],
         how = "inner"
         )
 
@@ -69,5 +82,3 @@ print(
 #----------------------------------------------------
 # Listo para hacer modeling
 
-valuations_forward = market_valuations.filter(pl.col('Pos').is_in(['FW', 'FW,MF']))
-valuations_forward = market_valuations.to_pandas()
