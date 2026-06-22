@@ -14,7 +14,6 @@ from sklearn.decomposition import PCA
 ### Helper Functions
 
 def plot_player_radar(dfs_list, index, feature_cols):
-    # Funcion para graficar el radar
     df = dfs_list[index]
     target_player = df.iloc[0]
     matches = df.iloc[1:]
@@ -58,7 +57,6 @@ def plot_player_radar(dfs_list, index, feature_cols):
 
 
 def plot_player_radar_scaled(dfs_list, index, feature_cols, full_dataset):
-    # 1. Extract the specific player dataset from your list
     df = dfs_list[index]
     target_player = df.iloc[0]
     matches = df.iloc[1:]
@@ -694,8 +692,56 @@ for player in barca_defense:
 
 
 ##-----------------------------------
+defense_2 = [
+    "tackles_per_90",
+    "tackles_won_per_90",
+    "interceptions_per_90",
+    "blocked_shots_per_90",
+    "aerial_duels_won_per_90",
+    "aerial_duels_lost_per_90",
+    "ground_duels_won_per_90",
+    "ground_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_crosses_corners_per_90",
+    "key_passes_per_90",
+    "assists_per_90",
+    "final_third_touches_per_90",
+    "pct_pass_accuracy"
+]
+centre_back = [
+    "clearances_per_90",
+    "tackles_per_90",
+    "tackles_won_per_90",
+    "interceptions_per_90",
+    "blocks_per_90",
+    "blocked_shots_per_90",
+    "aerial_duels_won_per_90",
+    "aerial_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_long_passes_per_90",
+    "raw_goals",
+    "raw_headed_goals",
+    "pct_aerial_duels_won",
+    "pct_pass_accuracy"
+]
+full_backs = [
+    "tackles_per_90",  
+    "tackles_won_per_90",
+    "blocked_shots_per_90",
+    "ground_duels_won_per_90",
+    "ground_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_crosses_corners_per_90",
+    "key_passes_per_90",
+    "raw_goals",
+    "assists_per_90",
+    "final_third_touches_per_90",
+    "pct_pass_accuracy"
+]
 
+defense = defense.fillna(0)
 
+plot_player_radar_scaled(defense_dfs, 6, feature_cols = centre_back, full_dataset = defense)
 ##-----------------------------------
 
 
@@ -861,7 +907,7 @@ for player in barca_keeper:
     dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
     dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
-    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+df_cols 
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+gk_cols
     matches_sliced = dfs_sorted[radar_cols]
     target_sliced = target_player_df[radar_cols]
     radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
@@ -873,6 +919,7 @@ for player in barca_keeper:
 
 
 #-----------------------------
+
 keeper_0 = [
     "saves_per_90",
     "goals_conceded_per_90",
@@ -881,13 +928,16 @@ keeper_0 = [
     "punches_per_90",
     "catches_per_90",
     "drops_per_90",
-    "penalties_faced",
-    "penalties_saved",
-    "clean_sheets",
+    "Penalties Faced",
+    "Penalties Saved",
+    "Clean Sheets",
     "save_percentage",
 ]
 
 #-----------------------------
+
+
+plot_player_radar_scaled(keeper_dfs, 1, feature_cols = keeper_0, full_dataset = keeper)
 
 
 keeper_clusters = keeper[['Player', 'cluster']].sort_values(['cluster'])
