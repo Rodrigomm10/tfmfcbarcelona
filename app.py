@@ -61,6 +61,12 @@ def barca_players_understat():
         return jsonify({"error": "Ejecuta scripts/02_fetch_understat.py"}), 404
     return jsonify(data)
 
+@app.route('/api/radar-forwards')
+def get_radar_forwards():
+    data = load_json('radar_trial.json')
+    if data is None:
+        return jsonify({"error": "No se pudo encontrar o leer el archivo radar_trial.json"}), 404
+    return jsonify(data)
 
 # ─── API: PLANTILLA / MERCADO ────────────────
 @app.route("/api/barca/transfers")

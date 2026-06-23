@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.decomposition import PCA
+import json
 
 # Function to see the goodness of the K
 ## we will use 
@@ -58,33 +59,26 @@ def plot_player_radar(dfs_list, index, feature_cols):
 
 
 def plot_player_radar_scaled(dfs_list, index, feature_cols, full_dataset):
-    # 1. Extract the specific player dataset from your list
     df = dfs_list[index]
     target_player = df.iloc[0]
     matches = df.iloc[1:]
     
-    # 2. Set up radar circular geometry
     labels = feature_cols
     num_vars = len(labels)
     angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
     angles += angles[:1] # Close the polygon loop
     
-    # Initialize the figure with polar projection
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
     
-    # Color palette: Target is dark navy, twins are distinctly colored
     colors = ['#1d3557', '#e63946', '#2a9d8f', '#b5e2fa', '#f4a261', '#6a4c93']
     
-    # 3. Calculate global min and max boundaries for normalization
     mins = full_dataset[labels].min().astype(float)
     maxs = full_dataset[labels].max().astype(float)
     
     def normalize(row):
-        # Maps raw numbers cleanly onto a universal 0.0 to 1.0 boundary scale
         row_vals = row[labels].astype(float)
         return (row_vals - mins) / (maxs - mins + 1e-5)
 
-    # 4. Process and Plot Target Player (Baseline)
     target_norm = normalize(target_player).values.flatten().tolist()
     target_norm += target_norm[:1]
     
@@ -92,7 +86,6 @@ def plot_player_radar_scaled(dfs_list, index, feature_cols, full_dataset):
             label=f"TARGET: {target_player['nombre']} ({target_player['equipo']})")
     ax.fill(angles, target_norm, color=colors[0], alpha=0.18)
     
-    # 5. Process and Plot the 5 Stylistic Twins
     for i, (_, match) in enumerate(matches.iterrows()):
         match_norm = normalize(match).values.flatten().tolist()
         match_norm += match_norm[:1]
@@ -101,29 +94,23 @@ def plot_player_radar_scaled(dfs_list, index, feature_cols, full_dataset):
         ax.plot(angles, match_norm, color=color, linewidth=1.5, linestyle='--', alpha=0.8,
                 label=f"Match {i+1}: {match['nombre']} ({match['equipo']}) | Dist: {match['Statistic_compatibility']:.2f}")
     
-    # 6. Generate Dynamic Reference Labels (Fixes the missing scale problem!)
     reference_labels = []
     for col in labels:
         max_val = maxs[col]
-        # Appends the maximum raw league metric directly underneath the column name
         reference_labels.append(f"{col}\n(Max: {max_val:.2f})")
     
-    # 7. Aesthetics, Orientation, and Layout Tweaks
-    ax.set_theta_offset(np.pi / 2) # Force 12 o'clock start position
-    ax.set_theta_direction(-1)     # Make the wheel run clockwise
+    ax.set_theta_offset(np.pi / 2) 
+    ax.set_theta_direction(-1)     
     
-    ax.set_ylim(0, 1)              # Lock boundaries tightly between 0 and 1
-    ax.set_yticklabels([])         # Remove the confusing 0.2, 0.4 internal ring labels
+    ax.set_ylim(0, 1)              
+    ax.set_yticklabels([])         
     
-    # Map the reference labels to the perimeter ticks with extra padding
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(reference_labels, color='#2b2d42', size=9, weight='bold')
     ax.tick_params(axis='x', pad=22)
     
-    # 8. Title and Multi-column Horizontal Legend
     plt.title(f"Stylistic Comparison Matrix: {target_player['nombre']}", size=16, color='#1d3557', y=1.12, weight='bold')
     
-    # Moves the legend box underneath the plot completely out of the way of the labels
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=2, frameon=True, shadow=True, fontsize=10)
     
     plt.tight_layout()
@@ -148,6 +135,77 @@ def silhouette_for_k(k, X):
         algorithm="lloyd"
     ).fit(X)
     return float(silo_score(X, km.labels_, metric="euclidean"))
+
+# Function to turn into Json file (trial)
+
+
+def generate_cluster_specific_ui_json(position_configs, output_filename="scouting_master_database.json"):
+    """
+    Unifies all players into a single JSON file. Dynamically selects radar columns 
+    based on the specific player's cluster ID.
+    """
+    master_database = []
+    for config in position_configs:
+        dfs_list = config["dfs_list"]
+        full_dataset = config["full_dataset"]
+        pos_label = config["pos_label"]
+        cluster_profile_map = config["cluster_profile_map"] # Dictionary mapping cluster_id -> column_list
+        for df in dfs_list:
+            if df.empty:
+                continue
+            df_clean = df.fillna(0)
+            target_row = df_clean.iloc[0]
+            similar_rows = df_clean.iloc[1:]
+            # 1. Determine which specific feature columns to use based on the target player's cluster
+            cluster_id = int(target_row["cluster"])
+            feature_cols = cluster_profile_map.get(cluster_id)
+            # Fallback if a cluster is missing from our map
+            if feature_cols is None:
+                print(f"Warning: Cluster {cluster_id} not defined in profile map for position {pos_label}. Skipping.")
+                continue
+            # 2. Grab global bounds for scaling this specific metric list
+            mins = full_dataset[feature_cols].min().fillna(0).astype(float)
+            maxs = full_dataset[feature_cols].max().fillna(0).astype(float)
+            def scale_stats(row):
+                row_vals = row[feature_cols].astype(float)
+                normalized = ((row_vals - mins) / (maxs - mins + 1e-5)) * 100
+                return normalized.round().astype(int).tolist()
+            # 3. Format Target Player profile
+            player_entry = {
+                "Player": str(target_row["nombre"]),
+                "Pos": pos_label,
+                "Cluster": cluster_id,
+                "Team": str(target_row["equipo"]),
+                "DisplayStats": {
+                    "PJ": int(target_row.get("Matches Played", target_row.get("Partidos Jugados", 0))),
+                    "G": int(target_row.get("Goals", target_row.get("raw_goals", 0))),
+                    "A": int(target_row.get("Goal Assists", target_row.get("assists_per_90", 0) * (target_row.get("90s", 1)))),
+                },
+                "RadarLabels": list(feature_cols),
+                "MainPlayerStats": scale_stats(target_row),
+                "SimilarPlayers": []
+            }
+            # 4. Map the matching percentage
+            max_dist = similar_rows["Statistic_compatibility"].max() if len(similar_rows) > 0 else 1.0
+            if max_dist == 0: max_dist = 1.0
+            # 5. Process the stylistic matches using the exact same columns
+            for _, match_row in similar_rows.iterrows():
+                dist = match_row["Statistic_compatibility"]
+                pct = max(60, 100 - (dist / (max_dist + 1e-5) * 35))
+                similar_entry = {
+                    "Name": str(match_row["nombre"]),
+                    "Team": str(match_row["equipo"]),
+                    "MatchPercentage": f"{int(pct)}%",
+                    "Stats": scale_stats(match_row)
+                }
+                player_entry["SimilarPlayers"].append(similar_entry)
+            master_database.append(player_entry)
+    # Save unified output
+    with open(output_filename, "w", encoding="utf-8") as f:
+        json.dump(master_database, f, indent=2, ensure_ascii=False)
+        
+    print(f"Database unified perfectly! File saved to '{output_filename}' ({len(master_database)} profiles).")
+
 
 #-------------------------------------------------------------------
 
@@ -208,10 +266,8 @@ forwards = pd.read_parquet('data/raw/forwards.parquet')
 
 player_forwards = forwards['nombre'].astype(str)
 team_forwards = forwards['equipo'].astype(str)
-
 X_for = forwards[for_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
-
 for_scaler = StandardScaler(with_mean = True, with_std = True)
 X_for_scaled = for_scaler.fit_transform(X_for.values)
 
@@ -266,7 +322,6 @@ forward_clusters = forwards[['nombre', 'cluster']].sort_values(['cluster'])
 print(forward_clusters.to_string(index = False))
 
 barca_forwards = forwards[forwards['equipo'] == 'FC Barcelona']['nombre'].to_list()
-
 forwards_dfs = []
 for player in barca_forwards:
     player_idx = forwards[forwards['nombre'] == player].index[0]
@@ -296,7 +351,6 @@ for player in barca_forwards:
 
 
 wingers = ['shots_on_target_per_90', 'goals_per_90', 'key_passes_per_90', 'shots_created_per_90','assists_per_90', 'successful_dribbles_per_90', 'total_shots_per_90', 'shots_off_target_per_90', 'big_chances_scored_per_90', 'big_chances_missed_per_90', 'shot_accuracy']
-
 striker = [
     "total_shots_per_90",
     "shots_on_target_per_90",
@@ -310,13 +364,23 @@ striker = [
     "shot_accuracy",
 ]
 
-for df in forwards_dfs:
-    df.fillna(0, inplace = True)
-
 
 plot_player_radar_scaled(forwards_dfs, 5, feature_cols = striker, full_dataset = forwards)
 
+forwards_trial = [
+        {
+            "dfs_list": forwards_dfs,
+            "full_dataset": forwards,
+            "pos_label": "FW",
+            "cluster_profile_map": {
+                0: wingers,
+                1: striker
+                }
+            }
+        ]
 
+generate_cluster_specific_ui_json(forwards_trial, "data/processed/radar_trial.json")
+#--------------------------------------
 
 centers_transposed = for_kmeans.cluster_centers_.T
 
