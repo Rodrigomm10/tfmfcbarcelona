@@ -947,14 +947,27 @@
      </div>
    </div>
    
-   <div id="player-stats-modal" class="stats-modal">
-     <div class="modal-content">
-       <span class="close-modal" onclick="closePlayerModal()">&times;</span>
-       <h2 id="modal-player-name" style="color: var(--barca-gold); margin-bottom: 4px; font-size: 1.6rem;">---</h2>
-       <p id="modal-player-pos" style="color: var(--muted); font-size: 0.8rem; font-weight: bold; margin-bottom: 16px;">---</p>
-       <div id="modal-stats-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
-     </div>
-   </div>
+ <div id="player-stats-modal" class="stats-modal">
+  <div class="modal-content" style="max-height: 90vh; overflow-y: auto; max-width: 800px; width: 95%; padding: 30px;">
+    
+    <span class="close-modal" onclick="closePlayerModal()" style="font-size: 2rem; top: 15px; right: 20px;">&times;</span>
+    
+    <h2 id="modal-player-name" style="color: var(--barca-gold); margin-bottom: 5px; font-size: 2.2rem; text-align: center;">---</h2>
+    <p id="modal-player-pos" style="color: var(--muted); font-size: 1.1rem; font-weight: bold; margin-bottom: 25px; text-align: center;">---</p>
+    
+    <div id="modal-stats-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;"></div>
+    
+    <div id="similar-players-container" style="display: none; margin-top: 25px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+      <h4 style="color: var(--barca-gold); font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Comparar con similares:</h4>
+      <div id="similar-players-checkboxes" style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 1rem;"></div>
+    </div>
+    
+    <div id="player-radar-container" style="display: none; position: relative; height: 500px; width: 100%; margin-top: 25px;">
+      <canvas id="playerRadarChart"></canvas>
+    </div>
+    
+  </div>
+</div>
 
     <!-- CHAMPIONS -->
     <div id="sec-champions" class="section">
@@ -3607,48 +3620,185 @@ let globalPlayersData = [];
     });
   }
 
-  function openPlayerModal(index) {
+  let playerRadarChartInstance = null;
+  let currentRadarData = null; // Guarda los datos del jugador actual para comparaciones
+
+  async function openPlayerModal(index) {
     const player = globalPlayersData[index];
     if (!player) return;
 
-    document.getElementById('modal-player-name').textContent = player.Player || 'Jugador';
+    const playerName = player.Player || player.nombre || 'Jugador';
+
+    document.getElementById('modal-player-name').textContent = playerName;
     document.getElementById('modal-player-pos').textContent = player.Pos || 'Especialista';
 
     const statsList = document.getElementById('modal-stats-list');
-    
     const metricsToDisplay = [
-      { label: "Partidos Jugados (MP)", value: player.MP || "0" },
+      { label: "Partidos Jugados", value: player.MP || "0" },
       { label: "Minutos Totales", value: player.Min ? `${player.Min}'` : "—" },
       { label: "Goles Totales", value: player.Gls ?? 0 },
       { label: "Asistencias", value: player.Ast ?? 0 },
-      { label: "Goles + Asistencias", value: player['G+A'] || ((player.Gls || 0) + (player.Ast || 0)) },
-      { label: "Disparos Realizados (Sh)", value: player.Sh || "0" },
-      { label: "Tiros a Puerta (SoT)", value: player.SoT || "0" },
-      { label: "Entradas Ganadas (TklW)", value: player.TklW || "0" },
-      { label: "Intercepciones (Int)", value: player.Int || "0" }
+      { label: "Goles + Asistencias", value: player['G+A'] || ((player.Gls || 0) + (player.Ast || 0)) }
     ];
 
     statsList.innerHTML = metricsToDisplay.map(m => `
-      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
-        <span style="color: var(--muted); font-size: 0.9rem;">${m.label}</span>
-        <span style="color: var(--text); font-weight: bold; font-size: 0.95rem;">${m.value}</span>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 4px;">
+        <span style="color: var(--muted); font-size: 0.85rem;">${m.label}</span>
+        <span style="color: var(--text); font-weight: bold; font-size: 0.9rem;">${m.value}</span>
       </div>
     `).join('');
 
     document.getElementById('player-stats-modal').style.display = 'flex';
+
+    const radarContainer = document.getElementById('player-radar-container');
+    const simContainer = document.getElementById('similar-players-container');
+    
+    try {
+      const response = await fetch('/api/radar-forwards'); 
+      const allRadarData = await response.json();
+      
+      const radarPlayer = allRadarData.find(p => p.Player === playerName);
+
+      if (radarPlayer) {
+        currentRadarData = radarPlayer;
+        radarContainer.style.display = 'block';
+        
+        // Configurar checkboxes de similares
+        setupSimilarPlayersCheckboxes(radarPlayer);
+        
+        // Dibujar grafico base sin comparaciones iniciales
+        drawRadarChart(radarPlayer, []);
+      } else {
+        radarContainer.style.display = 'none';
+        simContainer.style.display = 'none';
+      }
+    } catch (error) {
+      console.error("Error al cargar datos del radar:", error);
+      radarContainer.style.display = 'none';
+      simContainer.style.display = 'none';
+    }
+  }
+
+  // ─── NUEVO: FUNCIÓN PARA CREAR CHECKBOXES ───
+  function setupSimilarPlayersCheckboxes(radarPlayer) {
+    const simContainer = document.getElementById('similar-players-container');
+    const checkboxDiv = document.getElementById('similar-players-checkboxes');
+    
+    if (!radarPlayer.SimilarPlayers || radarPlayer.SimilarPlayers.length === 0) {
+      simContainer.style.display = 'none';
+      return;
+    }
+
+    simContainer.style.display = 'block';
+    
+    // Crear un checkbox por cada jugador similar
+    checkboxDiv.innerHTML = radarPlayer.SimilarPlayers.map((sim, idx) => `
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text);">
+        <input type="checkbox" class="sim-checkbox" data-idx="${idx}" onchange="updateRadarComparison()">
+        ${sim.Name} (${sim.MatchPercentage})
+      </label>
+    `).join('');
+  }
+
+  // ─── NUEVO: FUNCIÓN QUE SE EJECUTA AL HACER CLICK EN UN CHECKBOX ───
+  function updateRadarComparison() {
+    if (!currentRadarData) return;
+    
+    // Obtener todos los checkboxes seleccionados
+    const checkboxes = document.querySelectorAll('.sim-checkbox:checked');
+    const selectedSims = Array.from(checkboxes).map(cb => {
+      const idx = cb.getAttribute('data-idx');
+      return currentRadarData.SimilarPlayers[idx];
+    });
+
+    // Volver a dibujar el gráfico con los jugadores seleccionados
+    drawRadarChart(currentRadarData, selectedSims);
+  }
+
+  // ─── MODIFICADO: AHORA ACEPTA ARRAYS DE COMPARACIÓN ───
+  function drawRadarChart(basePlayer, comparisonPlayers = []) {
+    const ctx = document.getElementById('playerRadarChart').getContext('2d');
+    if (playerRadarChartInstance) playerRadarChartInstance.destroy();
+
+    const cleanLabels = basePlayer.RadarLabels.map(label => label.replace(/_/g, ' ').toUpperCase());
+
+    // Dataset base del jugador principal
+    const datasets = [{
+      label: basePlayer.Player,
+      data: basePlayer.MainPlayerStats,
+      backgroundColor: 'rgba(237, 187, 0, 0.3)', // Dorado
+      borderColor: '#EDBB00',
+      pointBackgroundColor: '#EDBB00',
+      pointBorderColor: '#fff'
+    }];
+
+    // Colores para los jugadores de comparación
+    const compareColors = [
+      { bg: 'rgba(0, 77, 152, 0.3)', border: '#004D98' }, // Azul
+      { bg: 'rgba(165, 0, 68, 0.3)', border: '#A50044' }, // Rojo
+      { bg: 'rgba(63, 185, 80, 0.3)', border: '#3fb950' } // Verde
+    ];
+
+    // Añadir un dataset por cada jugador similar seleccionado
+    comparisonPlayers.forEach((sim, index) => {
+      const color = compareColors[index % compareColors.length];
+      datasets.push({
+        label: sim.Name,
+        data: sim.Stats,
+        backgroundColor: color.bg,
+        borderColor: color.border,
+        pointBackgroundColor: color.border,
+        pointBorderColor: '#fff'
+      });
+    });
+
+    playerRadarChartInstance = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: cleanLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: { color: 'rgba(255, 255, 255, 0.15)' },
+            grid: { color: 'rgba(255, 255, 255, 0.15)' },
+            pointLabels: { color: '#e6edf3', font: { size: 9 } },
+            // NUEVO: Agrega las etiquetas numéricas de la escala (0, 20, 40... 100)
+            ticks: { 
+              display: true, 
+              min: 0, 
+              max: 100, 
+              stepSize: 20, 
+              color: '#8b949e', 
+              backdropColor: 'transparent',
+              z: 10
+            }
+          }
+        },
+        // Muestra la leyenda solo si estamos comparando jugadores
+        plugins: { 
+          legend: { 
+            display: comparisonPlayers.length > 0,
+            labels: { color: '#e6edf3' }
+          } 
+        }
+      }
+    });
   }
 
   function closePlayerModal() {
     document.getElementById('player-stats-modal').style.display = 'none';
+    document.getElementById('player-radar-container').style.display = 'none';
+    document.getElementById('similar-players-container').style.display = 'none';
   }
 
   window.addEventListener('click', function(event) {
     const modal = document.getElementById('player-stats-modal');
-    if (event.target === modal) {
-      closePlayerModal();
-    }
+    if (event.target === modal) closePlayerModal();
   });
-
 // SECCIÓN CHAMPIONS (dashboard)
 async function loadChampions() {
   window._championsLoaded=true;
