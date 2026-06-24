@@ -1,6 +1,6 @@
 [
   {
-    "Player": "Roony Bardghji",
+    "Player": "R. Bardghji",
     "Pos": "FW",
     "Cluster": 0,
     "Team": "FC Barcelona",
@@ -258,7 +258,7 @@
     ]
   },
   {
-    "Player": "Robert Lewandowski",
+    "Player": "R. Lewandowski",
     "Pos": "FW",
     "Cluster": 1,
     "Team": "FC Barcelona",
@@ -509,7 +509,7 @@
     ]
   },
   {
-    "Player": "Marcus Rashford",
+    "Player": "M. Rashford",
     "Pos": "FW",
     "Cluster": 0,
     "Team": "FC Barcelona",
@@ -638,7 +638,7 @@
     ]
   },
   {
-    "Player": "Ferrán Torres",
+    "Player": "Ferran Torres",
     "Pos": "FW",
     "Cluster": 1,
     "Team": "FC Barcelona",
@@ -755,6 +755,2217 @@
           72,
           41,
           69
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Marc Bernal",
+    "Pos": "MF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "total_passes_per_90",
+      "successful_long_passes_per_90",
+      "forward_passes_per_90",
+      "successful_passes_opp_half_per_90",
+      "progressive_carries_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "recoveries_per_90",
+      "pct_pass_accuracy",
+      "pct_pass_accuracy_opp_half",
+      "key_passes_per_90",
+      "shots_created_per_90"
+    ],
+    "MainPlayerStats": [
+      52,
+      26,
+      32,
+      51,
+      29,
+      65,
+      47,
+      25,
+      93,
+      91,
+      14,
+      12
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "M. Perrone",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "68%",
+        "Stats": [
+          55,
+          30,
+          41,
+          47,
+          30,
+          38,
+          23,
+          44,
+          89,
+          88,
+          24,
+          24
+        ]
+      },
+      {
+        "Name": "Martín Zubimendi",
+        "Team": "Arsenal FC",
+        "MatchPercentage": "68%",
+        "Stats": [
+          42,
+          20,
+          42,
+          37,
+          34,
+          36,
+          39,
+          32,
+          78,
+          78,
+          13,
+          12
+        ]
+      },
+      {
+        "Name": "R. Gravenberch",
+        "Team": "Liverpool FC",
+        "MatchPercentage": "67%",
+        "Stats": [
+          40,
+          8,
+          39,
+          40,
+          47,
+          32,
+          48,
+          38,
+          82,
+          85,
+          20,
+          20
+        ]
+      },
+      {
+        "Name": "F. Grillitsch",
+        "Team": "Sporting Braga",
+        "MatchPercentage": "65%",
+        "Stats": [
+          62,
+          40,
+          46,
+          54,
+          36,
+          33,
+          44,
+          44,
+          79,
+          79,
+          14,
+          14
+        ]
+      },
+      {
+        "Name": "A. Tchouaméni",
+        "Team": "Real Madrid CF",
+        "MatchPercentage": "65%",
+        "Stats": [
+          50,
+          29,
+          50,
+          51,
+          34,
+          45,
+          52,
+          53,
+          91,
+          91,
+          23,
+          19
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Marc Casadó",
+    "Pos": "MF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "total_passes_per_90",
+      "successful_long_passes_per_90",
+      "forward_passes_per_90",
+      "successful_passes_opp_half_per_90",
+      "progressive_carries_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "recoveries_per_90",
+      "pct_pass_accuracy",
+      "pct_pass_accuracy_opp_half",
+      "key_passes_per_90",
+      "shots_created_per_90"
+    ],
+    "MainPlayerStats": [
+      64,
+      24,
+      42,
+      61,
+      38,
+      27,
+      19,
+      34,
+      88,
+      90,
+      31,
+      28
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "M. Perrone",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "71%",
+        "Stats": [
+          55,
+          30,
+          41,
+          47,
+          30,
+          38,
+          23,
+          44,
+          89,
+          88,
+          24,
+          24
+        ]
+      },
+      {
+        "Name": "S. Lobotka",
+        "Team": "SSC Napoli",
+        "MatchPercentage": "70%",
+        "Stats": [
+          51,
+          21,
+          44,
+          45,
+          22,
+          15,
+          18,
+          46,
+          94,
+          93,
+          20,
+          18
+        ]
+      },
+      {
+        "Name": "Sergi Roberto",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "66%",
+        "Stats": [
+          57,
+          15,
+          41,
+          46,
+          39,
+          30,
+          27,
+          36,
+          93,
+          89,
+          39,
+          33
+        ]
+      },
+      {
+        "Name": "Fran Beltrán",
+        "Team": "Girona FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          45,
+          33,
+          37,
+          44,
+          41,
+          26,
+          29,
+          41,
+          90,
+          91,
+          19,
+          16
+        ]
+      },
+      {
+        "Name": "F. Grillitsch",
+        "Team": "Sporting Braga",
+        "MatchPercentage": "65%",
+        "Stats": [
+          62,
+          40,
+          46,
+          54,
+          36,
+          33,
+          44,
+          44,
+          79,
+          79,
+          14,
+          14
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Fermín López",
+    "Pos": "MF",
+    "Cluster": 2,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "box_touches_per_90",
+      "final_third_touches_per_90",
+      "total_shots_per_90",
+      "big_chances_created_per_90",
+      "through_balls_per_90",
+      "progressive_carries_per_90",
+      "key_passes_per_90",
+      "shots_created_per_90",
+      "shots_on_target_per_90",
+      "goals_per_90",
+      "assists_per_90"
+    ],
+    "MainPlayerStats": [
+      46,
+      48,
+      92,
+      73,
+      58,
+      39,
+      36,
+      42,
+      60,
+      27,
+      61
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "Dani Olmo",
+        "Team": "FC Barcelona",
+        "MatchPercentage": "73%",
+        "Stats": [
+          47,
+          46,
+          79,
+          41,
+          34,
+          25,
+          50,
+          52,
+          48,
+          27,
+          47
+        ]
+      },
+      {
+        "Name": "J. Brandt",
+        "Team": "BV Borussia 09 Dortmund",
+        "MatchPercentage": "66%",
+        "Stats": [
+          48,
+          45,
+          63,
+          41,
+          36,
+          24,
+          41,
+          41,
+          51,
+          35,
+          27
+        ]
+      },
+      {
+        "Name": "P. Foden",
+        "Team": "Manchester City FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          42,
+          53,
+          56,
+          42,
+          35,
+          31,
+          61,
+          58,
+          44,
+          28,
+          28
+        ]
+      },
+      {
+        "Name": "A. Ounahi",
+        "Team": "Girona FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          40,
+          58,
+          60,
+          58,
+          57,
+          62,
+          45,
+          41,
+          43,
+          24,
+          12
+        ]
+      },
+      {
+        "Name": "C. Führich",
+        "Team": "VfB Stuttgart 1893",
+        "MatchPercentage": "65%",
+        "Stats": [
+          52,
+          58,
+          61,
+          75,
+          21,
+          59,
+          61,
+          61,
+          62,
+          33,
+          48
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Dani Olmo",
+    "Pos": "MF",
+    "Cluster": 2,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "box_touches_per_90",
+      "final_third_touches_per_90",
+      "total_shots_per_90",
+      "big_chances_created_per_90",
+      "through_balls_per_90",
+      "progressive_carries_per_90",
+      "key_passes_per_90",
+      "shots_created_per_90",
+      "shots_on_target_per_90",
+      "goals_per_90",
+      "assists_per_90"
+    ],
+    "MainPlayerStats": [
+      47,
+      46,
+      79,
+      41,
+      34,
+      25,
+      50,
+      52,
+      48,
+      27,
+      47
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "P. Foden",
+        "Team": "Manchester City FC",
+        "MatchPercentage": "77%",
+        "Stats": [
+          42,
+          53,
+          56,
+          42,
+          35,
+          31,
+          61,
+          58,
+          44,
+          28,
+          28
+        ]
+      },
+      {
+        "Name": "J. Brandt",
+        "Team": "BV Borussia 09 Dortmund",
+        "MatchPercentage": "71%",
+        "Stats": [
+          48,
+          45,
+          63,
+          41,
+          36,
+          24,
+          41,
+          41,
+          51,
+          35,
+          27
+        ]
+      },
+      {
+        "Name": "G. Lo Celso",
+        "Team": "Real Betis Balompié",
+        "MatchPercentage": "65%",
+        "Stats": [
+          33,
+          47,
+          46,
+          37,
+          28,
+          36,
+          53,
+          50,
+          38,
+          10,
+          25
+        ]
+      },
+      {
+        "Name": "M. Akliouche",
+        "Team": "AS Monaco FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          43,
+          42,
+          45,
+          27,
+          19,
+          43,
+          39,
+          39,
+          36,
+          19,
+          28
+        ]
+      },
+      {
+        "Name": "Fermín López",
+        "Team": "FC Barcelona",
+        "MatchPercentage": "65%",
+        "Stats": [
+          46,
+          48,
+          92,
+          73,
+          58,
+          39,
+          36,
+          42,
+          60,
+          27,
+          61
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Pedri",
+    "Pos": "MF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "total_passes_per_90",
+      "successful_long_passes_per_90",
+      "forward_passes_per_90",
+      "successful_passes_opp_half_per_90",
+      "progressive_carries_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "recoveries_per_90",
+      "pct_pass_accuracy",
+      "pct_pass_accuracy_opp_half",
+      "key_passes_per_90",
+      "shots_created_per_90"
+    ],
+    "MainPlayerStats": [
+      71,
+      54,
+      52,
+      83,
+      85,
+      40,
+      31,
+      80,
+      90,
+      92,
+      66,
+      65
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "F. de Jong",
+        "Team": "FC Barcelona",
+        "MatchPercentage": "71%",
+        "Stats": [
+          67,
+          33,
+          56,
+          81,
+          74,
+          30,
+          30,
+          50,
+          99,
+          100,
+          48,
+          48
+        ]
+      },
+      {
+        "Name": "J. Kimmich",
+        "Team": "FC Bayern München",
+        "MatchPercentage": "68%",
+        "Stats": [
+          88,
+          84,
+          80,
+          95,
+          65,
+          29,
+          31,
+          48,
+          93,
+          83,
+          55,
+          54
+        ]
+      },
+      {
+        "Name": "Fabián Ruiz",
+        "Team": "Paris Saint-Germain FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          82,
+          64,
+          80,
+          91,
+          58,
+          21,
+          27,
+          39,
+          95,
+          89,
+          36,
+          38
+        ]
+      },
+      {
+        "Name": "Vitinha",
+        "Team": "Paris Saint-Germain FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          100,
+          99,
+          76,
+          100,
+          100,
+          22,
+          37,
+          64,
+          98,
+          94,
+          33,
+          36
+        ]
+      },
+      {
+        "Name": "N. Barella",
+        "Team": "FC Internazionale Milano",
+        "MatchPercentage": "65%",
+        "Stats": [
+          47,
+          35,
+          47,
+          52,
+          47,
+          30,
+          8,
+          65,
+          72,
+          69,
+          66,
+          63
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "F. de Jong",
+    "Pos": "MF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "total_passes_per_90",
+      "successful_long_passes_per_90",
+      "forward_passes_per_90",
+      "successful_passes_opp_half_per_90",
+      "progressive_carries_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "recoveries_per_90",
+      "pct_pass_accuracy",
+      "pct_pass_accuracy_opp_half",
+      "key_passes_per_90",
+      "shots_created_per_90"
+    ],
+    "MainPlayerStats": [
+      67,
+      33,
+      56,
+      81,
+      74,
+      30,
+      30,
+      50,
+      99,
+      100,
+      48,
+      48
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "W. Zaïre-Emery",
+        "Team": "Paris Saint-Germain FC",
+        "MatchPercentage": "73%",
+        "Stats": [
+          59,
+          19,
+          40,
+          64,
+          62,
+          33,
+          12,
+          60,
+          98,
+          95,
+          39,
+          37
+        ]
+      },
+      {
+        "Name": "M. Lopez",
+        "Team": "Paris FC",
+        "MatchPercentage": "67%",
+        "Stats": [
+          62,
+          44,
+          62,
+          53,
+          48,
+          22,
+          15,
+          47,
+          83,
+          72,
+          53,
+          49
+        ]
+      },
+      {
+        "Name": "Bernardo Silva",
+        "Team": "Manchester City FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          53,
+          27,
+          39,
+          51,
+          66,
+          23,
+          21,
+          48,
+          86,
+          81,
+          38,
+          36
+        ]
+      },
+      {
+        "Name": "A. Stiller",
+        "Team": "VfB Stuttgart 1893",
+        "MatchPercentage": "65%",
+        "Stats": [
+          60,
+          35,
+          68,
+          60,
+          35,
+          22,
+          31,
+          57,
+          79,
+          73,
+          47,
+          44
+        ]
+      },
+      {
+        "Name": "Hugo Sotelo",
+        "Team": "Real Club Celta de Vigo",
+        "MatchPercentage": "65%",
+        "Stats": [
+          51,
+          37,
+          43,
+          53,
+          43,
+          30,
+          27,
+          67,
+          93,
+          86,
+          46,
+          42
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "R. Araujo",
+    "Pos": "DF",
+    "Cluster": 0,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 3,
+      "A": 0
+    },
+    "RadarLabels": [
+      "clearances_per_90",
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "blocks_per_90",
+      "blocked_shots_per_90",
+      "aerial_duels_won_per_90",
+      "aerial_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_long_passes_per_90",
+      "raw_goals",
+      "raw_headed_goals",
+      "pct_aerial_duels_won",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      24,
+      30,
+      27,
+      22,
+      19,
+      7,
+      53,
+      41,
+      34,
+      26,
+      29,
+      25,
+      70,
+      88
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "Amir Rrahmani",
+        "Team": "SSC Napoli",
+        "MatchPercentage": "71%",
+        "Stats": [
+          28,
+          23,
+          19,
+          32,
+          28,
+          20,
+          55,
+          40,
+          37,
+          30,
+          14,
+          25,
+          72,
+          90
+        ]
+      },
+      {
+        "Name": "G. Lagerbielke",
+        "Team": "Sporting Braga",
+        "MatchPercentage": "68%",
+        "Stats": [
+          35,
+          19,
+          15,
+          27,
+          17,
+          22,
+          60,
+          33,
+          21,
+          42,
+          14,
+          25,
+          78,
+          84
+        ]
+      },
+      {
+        "Name": "T. Chalobah",
+        "Team": "Chelsea FC",
+        "MatchPercentage": "67%",
+        "Stats": [
+          49,
+          22,
+          21,
+          32,
+          28,
+          8,
+          40,
+          50,
+          33,
+          22,
+          29,
+          25,
+          57,
+          92
+        ]
+      },
+      {
+        "Name": "W. Saliba",
+        "Team": "Arsenal FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          38,
+          25,
+          22,
+          16,
+          12,
+          1,
+          40,
+          51,
+          34,
+          28,
+          0,
+          0,
+          56,
+          91
+        ]
+      },
+      {
+        "Name": "Jacobo Ramón",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "65%",
+        "Stats": [
+          33,
+          36,
+          29,
+          34,
+          31,
+          34,
+          61,
+          48,
+          33,
+          31,
+          14,
+          0,
+          70,
+          87
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Alejandro Balde",
+    "Pos": "DF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "blocked_shots_per_90",
+      "ground_duels_won_per_90",
+      "ground_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_crosses_corners_per_90",
+      "key_passes_per_90",
+      "raw_goals",
+      "assists_per_90",
+      "final_third_touches_per_90",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      39,
+      37,
+      3,
+      47,
+      35,
+      42,
+      7,
+      32,
+      -14,
+      13,
+      55,
+      89
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "D. Udogie",
+        "Team": "Tottenham Hotspur FC",
+        "MatchPercentage": "73%",
+        "Stats": [
+          44,
+          37,
+          5,
+          41,
+          48,
+          45,
+          11,
+          26,
+          -14,
+          8,
+          33,
+          73
+        ]
+      },
+      {
+        "Name": "T. Livramento",
+        "Team": "Newcastle United FC",
+        "MatchPercentage": "73%",
+        "Stats": [
+          31,
+          30,
+          12,
+          39,
+          36,
+          55,
+          18,
+          19,
+          -14,
+          7,
+          45,
+          81
+        ]
+      },
+      {
+        "Name": "A. Dedić",
+        "Team": "SL Benfica",
+        "MatchPercentage": "68%",
+        "Stats": [
+          35,
+          30,
+          23,
+          48,
+          52,
+          36,
+          11,
+          30,
+          0,
+          28,
+          52,
+          71
+        ]
+      },
+      {
+        "Name": "Miguel Gutiérrez",
+        "Team": "SSC Napoli",
+        "MatchPercentage": "65%",
+        "Stats": [
+          48,
+          45,
+          11,
+          50,
+          46,
+          62,
+          17,
+          41,
+          0,
+          6,
+          42,
+          78
+        ]
+      },
+      {
+        "Name": "Jefferson Encada",
+        "Team": "Club Foot Estrela",
+        "MatchPercentage": "65%",
+        "Stats": [
+          30,
+          27,
+          -3,
+          37,
+          33,
+          45,
+          21,
+          22,
+          -14,
+          16,
+          29,
+          71
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Pau Cubarsí",
+    "Pos": "DF",
+    "Cluster": 0,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 1,
+      "A": 0
+    },
+    "RadarLabels": [
+      "clearances_per_90",
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "blocks_per_90",
+      "blocked_shots_per_90",
+      "aerial_duels_won_per_90",
+      "aerial_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_long_passes_per_90",
+      "raw_goals",
+      "raw_headed_goals",
+      "pct_aerial_duels_won",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      42,
+      29,
+      26,
+      27,
+      21,
+      8,
+      36,
+      32,
+      27,
+      32,
+      0,
+      0,
+      66,
+      97
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "L. Dunk",
+        "Team": "Brighton & Hove Albion FC",
+        "MatchPercentage": "71%",
+        "Stats": [
+          38,
+          22,
+          20,
+          27,
+          49,
+          15,
+          41,
+          42,
+          38,
+          36,
+          0,
+          0,
+          63,
+          90
+        ]
+      },
+      {
+        "Name": "K. De Winter",
+        "Team": "AC Milan",
+        "MatchPercentage": "68%",
+        "Stats": [
+          42,
+          30,
+          26,
+          17,
+          33,
+          8,
+          35,
+          27,
+          31,
+          19,
+          0,
+          0,
+          70,
+          88
+        ]
+      },
+      {
+        "Name": "P. Lienhart",
+        "Team": "SC Freiburg",
+        "MatchPercentage": "66%",
+        "Stats": [
+          45,
+          25,
+          22,
+          29,
+          30,
+          -3,
+          35,
+          27,
+          25,
+          44,
+          0,
+          0,
+          70,
+          85
+        ]
+      },
+      {
+        "Name": "Robin Le Normand",
+        "Team": "Club Atlético de Madrid",
+        "MatchPercentage": "65%",
+        "Stats": [
+          41,
+          31,
+          23,
+          29,
+          16,
+          8,
+          43,
+          33,
+          17,
+          24,
+          0,
+          0,
+          70,
+          84
+        ]
+      },
+      {
+        "Name": "W. Saliba",
+        "Team": "Arsenal FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          38,
+          25,
+          22,
+          16,
+          12,
+          1,
+          40,
+          51,
+          34,
+          28,
+          0,
+          0,
+          56,
+          91
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Eric García",
+    "Pos": "DF",
+    "Cluster": 2,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 1,
+      "A": 0
+    },
+    "RadarLabels": [
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "blocked_shots_per_90",
+      "aerial_duels_won_per_90",
+      "aerial_duels_lost_per_90",
+      "ground_duels_won_per_90",
+      "ground_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_crosses_corners_per_90",
+      "key_passes_per_90",
+      "assists_per_90",
+      "final_third_touches_per_90",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      55,
+      43,
+      45,
+      23,
+      24,
+      31,
+      35,
+      30,
+      33,
+      0,
+      30,
+      7,
+      28,
+      89
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "I. Smolčić",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "67%",
+        "Stats": [
+          49,
+          45,
+          37,
+          16,
+          22,
+          29,
+          34,
+          30,
+          20,
+          10,
+          23,
+          5,
+          30,
+          77
+        ]
+      },
+      {
+        "Name": "Arnau Martínez",
+        "Team": "Girona FC",
+        "MatchPercentage": "67%",
+        "Stats": [
+          51,
+          39,
+          39,
+          16,
+          18,
+          26,
+          42,
+          34,
+          35,
+          8,
+          23,
+          14,
+          28,
+          73
+        ]
+      },
+      {
+        "Name": "L. Shaw",
+        "Team": "Manchester United FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          46,
+          38,
+          35,
+          9,
+          30,
+          36,
+          30,
+          28,
+          21,
+          7,
+          13,
+          0,
+          23,
+          76
+        ]
+      },
+      {
+        "Name": "H. Traoré",
+        "Team": "Paris FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          53,
+          50,
+          38,
+          23,
+          22,
+          22,
+          30,
+          30,
+          35,
+          9,
+          19,
+          9,
+          30,
+          67
+        ]
+      },
+      {
+        "Name": "P. Hincapié",
+        "Team": "Arsenal FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          57,
+          44,
+          36,
+          3,
+          27,
+          40,
+          39,
+          25,
+          23,
+          6,
+          18,
+          14,
+          26,
+          81
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "João Cancelo",
+    "Pos": "DF",
+    "Cluster": 2,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 1,
+      "A": 0
+    },
+    "RadarLabels": [
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "blocked_shots_per_90",
+      "aerial_duels_won_per_90",
+      "aerial_duels_lost_per_90",
+      "ground_duels_won_per_90",
+      "ground_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_crosses_corners_per_90",
+      "key_passes_per_90",
+      "assists_per_90",
+      "final_third_touches_per_90",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      60,
+      65,
+      29,
+      54,
+      11,
+      11,
+      73,
+      71,
+      56,
+      29,
+      40,
+      32,
+      55,
+      77
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "I. Maatsen",
+        "Team": "Aston Villa FC",
+        "MatchPercentage": "70%",
+        "Stats": [
+          53,
+          57,
+          28,
+          29,
+          17,
+          16,
+          54,
+          76,
+          45,
+          20,
+          43,
+          5,
+          52,
+          74
+        ]
+      },
+      {
+        "Name": "Alberto Costa",
+        "Team": "FC Porto",
+        "MatchPercentage": "69%",
+        "Stats": [
+          56,
+          56,
+          34,
+          32,
+          19,
+          23,
+          58,
+          70,
+          36,
+          18,
+          25,
+          52,
+          43,
+          62
+        ]
+      },
+      {
+        "Name": "N. Williams",
+        "Team": "Nottingham Forest FC",
+        "MatchPercentage": "68%",
+        "Stats": [
+          63,
+          58,
+          37,
+          50,
+          17,
+          27,
+          59,
+          49,
+          43,
+          24,
+          30,
+          10,
+          42,
+          65
+        ]
+      },
+      {
+        "Name": "R. Aït-Nouri",
+        "Team": "Manchester City FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          72,
+          64,
+          34,
+          17,
+          21,
+          20,
+          74,
+          68,
+          41,
+          17,
+          29,
+          28,
+          64,
+          85
+        ]
+      },
+      {
+        "Name": "O. Deman",
+        "Team": "SV Werder Bremen",
+        "MatchPercentage": "65%",
+        "Stats": [
+          65,
+          63,
+          21,
+          36,
+          28,
+          18,
+          45,
+          34,
+          44,
+          26,
+          34,
+          20,
+          45,
+          58
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "J. Koundé",
+    "Pos": "DF",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 1,
+      "A": 0
+    },
+    "RadarLabels": [
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "blocked_shots_per_90",
+      "ground_duels_won_per_90",
+      "ground_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_crosses_corners_per_90",
+      "key_passes_per_90",
+      "raw_goals",
+      "assists_per_90",
+      "final_third_touches_per_90",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      42,
+      31,
+      10,
+      41,
+      43,
+      28,
+      15,
+      26,
+      0,
+      17,
+      48,
+      88
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "R. Aguilar",
+        "Team": "Racing Club de Lens",
+        "MatchPercentage": "67%",
+        "Stats": [
+          45,
+          38,
+          14,
+          32,
+          32,
+          38,
+          28,
+          39,
+          14,
+          14,
+          55,
+          70
+        ]
+      },
+      {
+        "Name": "Z. Çelik",
+        "Team": "AS Roma",
+        "MatchPercentage": "66%",
+        "Stats": [
+          47,
+          39,
+          27,
+          30,
+          43,
+          33,
+          14,
+          24,
+          0,
+          7,
+          48,
+          73
+        ]
+      },
+      {
+        "Name": "Iván Fresneda",
+        "Team": "Sporting Clube de Portugal",
+        "MatchPercentage": "65%",
+        "Stats": [
+          38,
+          30,
+          9,
+          33,
+          46,
+          21,
+          17,
+          23,
+          0,
+          -5,
+          42,
+          78
+        ]
+      },
+      {
+        "Name": "A. Murillo",
+        "Team": "Olympique de Marseille",
+        "MatchPercentage": "65%",
+        "Stats": [
+          42,
+          40,
+          17,
+          47,
+          56,
+          34,
+          13,
+          28,
+          14,
+          11,
+          47,
+          74
+        ]
+      },
+      {
+        "Name": "Diogo Dalot",
+        "Team": "Manchester United FC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          40,
+          31,
+          8,
+          29,
+          31,
+          44,
+          17,
+          28,
+          0,
+          13,
+          39,
+          72
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Gerard Martín",
+    "Pos": "DF",
+    "Cluster": 0,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "clearances_per_90",
+      "tackles_per_90",
+      "tackles_won_per_90",
+      "interceptions_per_90",
+      "blocks_per_90",
+      "blocked_shots_per_90",
+      "aerial_duels_won_per_90",
+      "aerial_duels_lost_per_90",
+      "recoveries_per_90",
+      "successful_long_passes_per_90",
+      "raw_goals",
+      "raw_headed_goals",
+      "pct_aerial_duels_won",
+      "pct_pass_accuracy"
+    ],
+    "MainPlayerStats": [
+      39,
+      37,
+      35,
+      35,
+      11,
+      7,
+      32,
+      18,
+      19,
+      29,
+      -14,
+      -25,
+      76,
+      87
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "A. Barišić",
+        "Team": "Sporting Braga",
+        "MatchPercentage": "66%",
+        "Stats": [
+          27,
+          34,
+          37,
+          27,
+          33,
+          -3,
+          43,
+          18,
+          13,
+          24,
+          -14,
+          -25,
+          83,
+          80
+        ]
+      },
+      {
+        "Name": "C. Mbemba",
+        "Team": "Lille OSC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          54,
+          27,
+          25,
+          37,
+          20,
+          17,
+          31,
+          17,
+          29,
+          50,
+          -14,
+          -25,
+          77,
+          89
+        ]
+      },
+      {
+        "Name": "D. Hancko",
+        "Team": "Club Atlético de Madrid",
+        "MatchPercentage": "65%",
+        "Stats": [
+          29,
+          36,
+          32,
+          19,
+          21,
+          10,
+          27,
+          30,
+          24,
+          34,
+          -14,
+          -25,
+          60,
+          78
+        ]
+      },
+      {
+        "Name": "Manu Fernández",
+        "Team": "Real Club Celta de Vigo",
+        "MatchPercentage": "65%",
+        "Stats": [
+          33,
+          33,
+          32,
+          26,
+          18,
+          -3,
+          13,
+          10,
+          32,
+          39,
+          -14,
+          -25,
+          67,
+          85
+        ]
+      },
+      {
+        "Name": "A. Seko",
+        "Team": "Le Havre AC",
+        "MatchPercentage": "65%",
+        "Stats": [
+          33,
+          30,
+          21,
+          36,
+          12,
+          4,
+          19,
+          15,
+          22,
+          35,
+          -14,
+          -25,
+          67,
+          71
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Joan García",
+    "Pos": "GK",
+    "Cluster": 2,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "saves_per_90",
+      "goals_conceded_per_90",
+      "goals_conceded_inside_per_90",
+      "goals_conceded_outside_per_90",
+      "punches_per_90",
+      "catches_per_90",
+      "drops_per_90",
+      "Penalties Faced",
+      "Penalties Saved",
+      "Clean Sheets",
+      "save_percentage"
+    ],
+    "MainPlayerStats": [
+      42,
+      10,
+      10,
+      1,
+      10,
+      26,
+      11,
+      8,
+      -33,
+      78,
+      90
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "T. Courtois",
+        "Team": "Real Madrid CF",
+        "MatchPercentage": "73%",
+        "Stats": [
+          28,
+          17,
+          13,
+          28,
+          6,
+          20,
+          11,
+          23,
+          -33,
+          61,
+          70
+        ]
+      },
+      {
+        "Name": "G. Kobel",
+        "Team": "BV Borussia 09 Dortmund",
+        "MatchPercentage": "73%",
+        "Stats": [
+          45,
+          23,
+          23,
+          12,
+          12,
+          17,
+          8,
+          31,
+          -33,
+          78,
+          73
+        ]
+      },
+      {
+        "Name": "J. Butez",
+        "Team": "Calcio Como 1907",
+        "MatchPercentage": "70%",
+        "Stats": [
+          37,
+          12,
+          8,
+          27,
+          19,
+          40,
+          15,
+          31,
+          0,
+          100,
+          83
+        ]
+      },
+      {
+        "Name": "B. Özer",
+        "Team": "Lille OSC",
+        "MatchPercentage": "67%",
+        "Stats": [
+          34,
+          25,
+          23,
+          21,
+          14,
+          18,
+          29,
+          15,
+          0,
+          67,
+          63
+        ]
+      },
+      {
+        "Name": "Rui Silva",
+        "Team": "Sporting Clube de Portugal",
+        "MatchPercentage": "65%",
+        "Stats": [
+          37,
+          11,
+          10,
+          7,
+          21,
+          18,
+          -8,
+          31,
+          0,
+          72,
+          85
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "Iñaki Peña",
+    "Pos": "GK",
+    "Cluster": 4,
+    "Team": "Elche CF",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "saves_per_90",
+      "goals_conceded_per_90",
+      "goals_conceded_inside_per_90",
+      "goals_conceded_outside_per_90",
+      "punches_per_90",
+      "catches_per_90",
+      "drops_per_90",
+      "Penalties Faced",
+      "Penalties Saved",
+      "Clean Sheets",
+      "save_percentage"
+    ],
+    "MainPlayerStats": [
+      74,
+      54,
+      50,
+      45,
+      3,
+      18,
+      -8,
+      8,
+      -33,
+      17,
+      56
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "F. Ravaglia",
+        "Team": "Bologna FC 1909",
+        "MatchPercentage": "75%",
+        "Stats": [
+          65,
+          55,
+          49,
+          57,
+          23,
+          21,
+          -8,
+          8,
+          -33,
+          6,
+          50
+        ]
+      },
+      {
+        "Name": "Anthony Lopes",
+        "Team": "FC Nantes",
+        "MatchPercentage": "75%",
+        "Stats": [
+          63,
+          49,
+          46,
+          34,
+          16,
+          24,
+          1,
+          31,
+          -33,
+          28,
+          55
+        ]
+      },
+      {
+        "Name": "M. Zetterer",
+        "Team": "Eintracht Frankfurt",
+        "MatchPercentage": "73%",
+        "Stats": [
+          54,
+          44,
+          40,
+          41,
+          19,
+          20,
+          18,
+          8,
+          -33,
+          22,
+          54
+        ]
+      },
+      {
+        "Name": "L. Hrádecký",
+        "Team": "AS Monaco FC",
+        "MatchPercentage": "69%",
+        "Stats": [
+          54,
+          42,
+          42,
+          21,
+          20,
+          20,
+          -8,
+          15,
+          -33,
+          6,
+          56
+        ]
+      },
+      {
+        "Name": "J. Urbig",
+        "Team": "FC Bayern München",
+        "MatchPercentage": "65%",
+        "Stats": [
+          44,
+          32,
+          33,
+          11,
+          6,
+          21,
+          -8,
+          8,
+          -33,
+          22,
+          61
+        ]
+      }
+    ]
+  },
+  {
+    "Player": "W. Szczęsny",
+    "Pos": "GK",
+    "Cluster": 1,
+    "Team": "FC Barcelona",
+    "DisplayStats": {
+      "PJ": 0,
+      "G": 0,
+      "A": 0
+    },
+    "RadarLabels": [
+      "saves_per_90",
+      "goals_conceded_per_90",
+      "goals_conceded_inside_per_90",
+      "goals_conceded_outside_per_90",
+      "punches_per_90",
+      "catches_per_90",
+      "drops_per_90",
+      "Penalties Faced",
+      "Penalties Saved",
+      "Clean Sheets",
+      "save_percentage"
+    ],
+    "MainPlayerStats": [
+      54,
+      53,
+      54,
+      23,
+      27,
+      8,
+      -8,
+      8,
+      0,
+      -6,
+      46
+    ],
+    "SimilarPlayers": [
+      {
+        "Name": "P. Gulácsi",
+        "Team": "RasenBallsport Leipzig",
+        "MatchPercentage": "72%",
+        "Stats": [
+          37,
+          41,
+          47,
+          -6,
+          29,
+          31,
+          -8,
+          8,
+          -33,
+          44,
+          45
+        ]
+      },
+      {
+        "Name": "O. Nkambadio",
+        "Team": "Paris FC",
+        "MatchPercentage": "70%",
+        "Stats": [
+          32,
+          54,
+          50,
+          45,
+          27,
+          10,
+          39,
+          23,
+          0,
+          0,
+          28
+        ]
+      },
+      {
+        "Name": "Lucão",
+        "Team": "Gil Vicente FC",
+        "MatchPercentage": "66%",
+        "Stats": [
+          19,
+          44,
+          38,
+          45,
+          23,
+          37,
+          27,
+          -8,
+          -33,
+          0,
+          26
+        ]
+      },
+      {
+        "Name": "R. Sava",
+        "Team": "Udinese Calcio",
+        "MatchPercentage": "65%",
+        "Stats": [
+          25,
+          66,
+          62,
+          54,
+          28,
+          8,
+          -8,
+          -8,
+          -33,
+          0,
+          11
+        ]
+      },
+      {
+        "Name": "S. Scuffet",
+        "Team": "Pisa Sporting Club",
+        "MatchPercentage": "65%",
+        "Stats": [
+          23,
+          71,
+          81,
+          -6,
+          39,
+          15,
+          -8,
+          15,
+          -33,
+          0,
+          6
         ]
       }
     ]

@@ -376,6 +376,35 @@ forwards_trial = [
                 0: wingers,
                 1: striker
                 }
+            },
+        {
+            "dfs_list": midfield_dfs,
+            "full_dataset": midfield,
+            "pos_label": "MF",
+            "cluster_profile_map": {
+                1: defensive_mid,
+                2: offensive_mid
+                }
+            },
+        {
+            "dfs_list": defense_dfs,
+            "full_dataset": defense,
+            "pos_label": "DF",
+            "cluster_profile_map": {
+                0: centre_back,
+                1: full_backs,
+                2: defense_2
+                }
+            },
+        {
+            "dfs_list": keeper_dfs,
+            "full_dataset": keeper,
+            "pos_label": "GK",
+            "cluster_profile_map": {
+                2: keeper_0,
+                4: keeper_0,
+                1: keeper_0
+                }
             }
         ]
 
@@ -463,16 +492,12 @@ midfield = pd.read_parquet('data/raw/midfielders.parquet')
 
 player_midfield = midfield['nombre'].astype(str)
 team_midfield = midfield['equipo'].astype(str)
-
-
 X_for = midfield[mid_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
 
 
 ###Normalizamos el Standard Deviation a una sola escala
 mid_scaler = StandardScaler(with_mean = True, with_std = True)
-
-
 X_for_scaled = mid_scaler.fit_transform(X_for.values)
 
 
@@ -520,7 +545,6 @@ midfield['cluster'] = for_kmeans.labels_
 midfield['cluster'].value_counts()
 
 barca_midfield = midfield[midfield['equipo'] == 'FC Barcelona']['nombre'].to_list()
-
 midfield_dfs = []
 for player in barca_midfield:
     player_idx = midfield[midfield['nombre'] == player].index[0]
@@ -662,7 +686,6 @@ df_features = defense.with_columns([
 df_features.write_parquet('data/raw/defense.parquet')
 
 defense = pd.read_parquet('data/raw/defense.parquet')
-
 df_cols = [
     "clearances_per_90", "tackles_per_90", "tackles_won_per_90", "tackles_lost_per_90", 
     "interceptions_per_90", "blocks_per_90", "blocked_shots_per_90", 
@@ -675,14 +698,12 @@ df_cols = [
 
 player_defense = defense['nombre'].astype(str)
 team_defense = defense['equipo'].astype(str)
-
 X_for = defense[df_cols].apply(pd.to_numeric, errors = 'coerce')
 X_for = X_for.fillna(0)
 
 
 ###Normalizamos el Standard Deviation a una sola escala
 for_scaler = StandardScaler(with_mean = True, with_std = True)
-
 X_for_scaled = for_scaler.fit_transform(X_for.values)
 
 
@@ -729,7 +750,6 @@ defense['cluster'] = for_kmeans.labels_
 defense['cluster'].value_counts()
 
 barca_defense = defense[defense['equipo'] == 'FC Barcelona']['nombre'].to_list()
-
 defense_dfs = []
 for player in barca_defense:
     player_idx = defense[defense['nombre'] == player].index[0]
@@ -758,10 +778,56 @@ for player in barca_defense:
 
 
 ##-----------------------------------
-
+defense_2 = [
+    "tackles_per_90",
+    "tackles_won_per_90",
+    "interceptions_per_90",
+    "blocked_shots_per_90",
+    "aerial_duels_won_per_90",
+    "aerial_duels_lost_per_90",
+    "ground_duels_won_per_90",
+    "ground_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_crosses_corners_per_90",
+    "key_passes_per_90",
+    "assists_per_90",
+    "final_third_touches_per_90",
+    "pct_pass_accuracy"
+]
+centre_back = [
+    "clearances_per_90",
+    "tackles_per_90",
+    "tackles_won_per_90",
+    "interceptions_per_90",
+    "blocks_per_90",
+    "blocked_shots_per_90",
+    "aerial_duels_won_per_90",
+    "aerial_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_long_passes_per_90",
+    "raw_goals",
+    "raw_headed_goals",
+    "pct_aerial_duels_won",
+    "pct_pass_accuracy"
+]
+full_backs = [
+    "tackles_per_90",  
+    "tackles_won_per_90",
+    "blocked_shots_per_90",
+    "ground_duels_won_per_90",
+    "ground_duels_lost_per_90",
+    "recoveries_per_90",
+    "successful_crosses_corners_per_90",
+    "key_passes_per_90",
+    "raw_goals",
+    "assists_per_90",
+    "final_third_touches_per_90",
+    "pct_pass_accuracy"
+]
 
 ##-----------------------------------
 
+plot_player_radar_scaled(defense_dfs, 5, feature_cols = defense_2, full_dataset = defense)
 
 defense_clusters = defense[['Player', 'cluster']].sort_values(['cluster'])
 print(defense_clusters.to_string(index = False))
@@ -861,7 +927,6 @@ X_for = X_for.fillna(0)
 
 ###Normalizamos el Standard Deviation a una sola escala
 for_scaler = StandardScaler(with_mean = True, with_std = True)
-
 X_for_scaled = for_scaler.fit_transform(X_for.values)
 
 
@@ -908,7 +973,6 @@ keeper['cluster'] = for_kmeans.labels_
 keeper['cluster'].value_counts()
 
 barca_keeper = keeper[keeper['equipo'] == 'FC Barcelona']['nombre'].to_list()
-
 keeper_dfs = []
 for player in barca_keeper:
     player_idx = keeper[keeper['nombre'] == player].index[0]
@@ -925,7 +989,7 @@ for player in barca_keeper:
     dfs['Statistic_compatibility'] = distances
     top_5_matches = cluster_mates.sort_values('distance_to_target').head(5)
     dfs_sorted = dfs.sort_values('Statistic_compatibility').head(5)
-    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+df_cols 
+    radar_cols = ['nombre', 'equipo', 'cluster', 'Statistic_compatibility']+gk_cols
     matches_sliced = dfs_sorted[radar_cols]
     target_sliced = target_player_df[radar_cols]
     radar_ready_df = pd.concat([target_sliced, matches_sliced], ignore_index=True)
@@ -945,10 +1009,10 @@ keeper_0 = [
     "punches_per_90",
     "catches_per_90",
     "drops_per_90",
-    "penalties_faced",
-    "penalties_saved",
-    "clean_sheets",
-    "save_percentage",
+    "Penalties Faced",
+    "Penalties Saved",
+    "Clean Sheets",
+    "save_percentage"
 ]
 
 #-----------------------------
