@@ -81,19 +81,19 @@
       text-transform: uppercase;
     }
 
-    /* Liga cards grid */
     .leagues-section {
       width: 100%;
       max-width: 960px;
       padding: 0 20px;
-      margin-top: 32px;
+      margin: 32px auto 0 auto; 
     }
+
     .leagues-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr); 
       gap: 14px;
       margin-bottom: 14px;
-    }
+    }/* Liga cards grid */
     @media (max-width: 760px) { .leagues-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 480px) { .leagues-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 
@@ -437,12 +437,6 @@
                onerror="this.src='/static/img/premier.svg'; this.onerror=()=>{this.style.display='none';this.nextElementSibling.style.display='flex';}" alt="PL">
           <div class="league-badge" style="display:none;background:#3d195b;">PL</div>
         </div>
-        <div class="league-card" onclick="openLeague('bundesliga')" title="Bundesliga">
-          <!-- Archivo local: static/img/bundesliga.svg -->
-          <img src="/static/img/bundesliga.svg"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="Bundesliga">
-          <div class="league-badge" style="display:none;background:#d20515;">BL</div>
-        </div>
       </div>
       <!-- Fila inferior -->
       <div class="leagues-grid">
@@ -458,17 +452,11 @@
                onerror="this.src='/static/img/ligue1.svg'; this.onerror=()=>{this.style.display='none';this.nextElementSibling.style.display='flex';}" alt="Ligue 1">
           <div class="league-badge" style="display:none;background:#091c3e;">L1</div>
         </div>
-        <div class="league-card" onclick="openLeague('ligaportugal')" title="Liga Portugal">
-          <!-- Guardar logo como: static/img/ligaportugal.png -->
-          <img src="/static/img/ligaportugal.png"
-               onerror="this.src='/static/img/ligaportugal.svg'; this.onerror=()=>{this.style.display='none';this.nextElementSibling.style.display='flex';}" alt="Liga Portugal">
-          <div class="league-badge" style="display:none;background:#003087;">LIGA<br>PT</div>
-        </div>
-        <div class="league-card" onclick="openLeague('uel')" title="UEFA Europa League">
-          <!-- Guardar logo como: static/img/uel.png -->
-          <img src="/static/img/uel.png"
-               onerror="this.src='/static/img/uel.svg'; this.onerror=()=>{this.style.display='none';this.nextElementSibling.style.display='flex';}" alt="UEL">
-          <div class="league-badge" style="display:none;background:#f05000;">UEL</div>
+        <div class="league-card" onclick="openLeague('bundesliga')" title="Bundesliga">
+          <!-- Archivo local: static/img/bundesliga.svg -->
+          <img src="/static/img/bundesliga.svg"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="Bundesliga">
+          <div class="league-badge" style="display:none;background:#d20515;">BL</div>
         </div>
       </div>
     </div>
@@ -880,15 +868,11 @@
   </div>
 
   <nav>
-    <button class="active" onclick="showSection('equipo')">🏆 Equipo</button>
-    <button onclick="showSection('partidos')">📅 Partidos</button>
-    <button onclick="showSection('jugadores')">👤 Jugadores</button>
-    <button onclick="showSection('champions')">⭐ Champions</button>
-    <button onclick="showSection('copas')">🥇 Copa & Supercopa</button>
-    <button onclick="showSection('avanzadas')">📊 Stats Avanzadas</button>
-    <button onclick="showSection('mercado')">💶 Plantilla & Mercado</button>
-    <button onclick="showSection('europa')">🌍 Comparativa Europa</button>
-    <button onclick="showSection('lesiones')">Lesiones</button>
+    <button class="active" onclick="showSection('equipo')">Equipo</button>
+    <button onclick="showSection('partidos')">Partidos</button>
+    <button onclick="showSection('jugadores')">Jugadores</button>
+    <button onclick="showSection('avanzadas')">Stats Avanzadas</button>
+    <button onclick="showSection('mercado')">Plantilla & Mercado</button>
   </nav>
 
   <main>
