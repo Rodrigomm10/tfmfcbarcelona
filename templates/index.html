@@ -3715,7 +3715,7 @@ let globalPlayersData = [];
     drawRadarChart(currentRadarData, selectedSims);
   }
 
-  // ─── MODIFICADO: AHORA ACEPTA ARRAYS DE COMPARACIÓN ───
+// ─── FUNCIÓN ACTUALIZADA CON TOOLTIPS REALES ───
   function drawRadarChart(basePlayer, comparisonPlayers = []) {
     const ctx = document.getElementById('playerRadarChart').getContext('2d');
     if (playerRadarChartInstance) playerRadarChartInstance.destroy();
@@ -3732,11 +3732,13 @@ let globalPlayersData = [];
       pointBorderColor: '#fff'
     }];
 
-    // Colores para los jugadores de comparación
     const compareColors = [
-      { bg: 'rgba(0, 77, 152, 0.3)', border: '#004D98' }, // Azul
-      { bg: 'rgba(165, 0, 68, 0.3)', border: '#A50044' }, // Rojo
-      { bg: 'rgba(63, 185, 80, 0.3)', border: '#3fb950' } // Verde
+      { bg: 'rgba(0, 77, 152, 0.3)', border: '#004D98' },    // Azul (Barça)
+      { bg: 'rgba(165, 0, 68, 0.3)', border: '#A50044' },    // Rojo (Barça)
+      { bg: 'rgba(63, 185, 80, 0.3)', border: '#3fb950' },   // Verde
+      { bg: 'rgba(155, 89, 182, 0.3)', border: '#9b59b6' },  // Morado
+      { bg: 'rgba(0, 229, 255, 0.3)', border: '#00E5FF' },   // Cyan
+      { bg: 'rgba(255, 123, 114, 0.3)', border: '#ff7b72' }  // Naranja
     ];
 
     // Añadir un dataset por cada jugador similar seleccionado
@@ -3766,7 +3768,6 @@ let globalPlayersData = [];
             angleLines: { color: 'rgba(255, 255, 255, 0.15)' },
             grid: { color: 'rgba(255, 255, 255, 0.15)' },
             pointLabels: { color: '#e6edf3', font: { size: 9 } },
-            // NUEVO: Agrega las etiquetas numéricas de la escala (0, 20, 40... 100)
             ticks: { 
               display: true, 
               min: 0, 
@@ -3778,12 +3779,38 @@ let globalPlayersData = [];
             }
           }
         },
-        // Muestra la leyenda solo si estamos comparando jugadores
         plugins: { 
           legend: { 
             display: comparisonPlayers.length > 0,
             labels: { color: '#e6edf3' }
-          } 
+          },
+          // ─── ESTA ES LA MAGIA: TOOLTIPS PERSONALIZADOS ───
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const datasetLabel = context.dataset.label; 
+                const percentile = context.raw;             
+                const statIndex = context.dataIndex;        
+                
+                // 1. Revisa si es el jugador principal
+                if (datasetLabel === basePlayer.Player && basePlayer.RawPlayerStats) {
+                   const trueValue = basePlayer.RawPlayerStats[statIndex];
+                   return `${datasetLabel}: ${trueValue} (Percentil: ${percentile})`;
+                }
+                
+                // 2. Revisa si es uno de los jugadores similares (checkboxes)
+                const similarPlayer = comparisonPlayers.find(p => p.Name === datasetLabel);
+                if (similarPlayer && similarPlayer.RawStats) {
+                   const trueValue = similarPlayer.RawStats[statIndex];
+                   return `${datasetLabel}: ${trueValue} (Percentil: ${percentile})`;
+                }
+                
+                // 3. Fallback si algo sale mal o faltan datos
+                return `${datasetLabel}: ${percentile} (Percentil)`;
+              }
+            }
+          }
+          // ─────────────────────────────────────────────────
         }
       }
     });

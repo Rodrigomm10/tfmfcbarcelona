@@ -82,3 +82,10 @@ print(
 #----------------------------------------------------
 # Listo para hacer modeling
 
+files = ['forwards.parquet', 'midfielders.parquet', 'defense.parquet', 'goalkeeper.parquet']
+
+data_frames = []
+
+for x in files:
+    df = pl.scan_parquet(f'data/raw/{x}').filter(pl.col('equipo') == 'FC Barcelona')
+    data_frames.append(df.collect())

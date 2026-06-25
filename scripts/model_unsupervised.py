@@ -140,10 +140,6 @@ def silhouette_for_k(k, X):
 
 
 def generate_cluster_specific_ui_json(position_configs, output_filename="scouting_master_database.json"):
-    """
-    Unifies all players into a single JSON file. Dynamically selects radar columns 
-    based on the specific player's cluster ID.
-    """
     master_database = []
     for config in position_configs:
         dfs_list = config["dfs_list"]
@@ -156,21 +152,21 @@ def generate_cluster_specific_ui_json(position_configs, output_filename="scoutin
             df_clean = df.fillna(0)
             target_row = df_clean.iloc[0]
             similar_rows = df_clean.iloc[1:]
-            # 1. Determine which specific feature columns to use based on the target player's cluster
             cluster_id = int(target_row["cluster"])
             feature_cols = cluster_profile_map.get(cluster_id)
-            # Fallback if a cluster is missing from our map
             if feature_cols is None:
                 print(f"Warning: Cluster {cluster_id} not defined in profile map for position {pos_label}. Skipping.")
                 continue
-            # 2. Grab global bounds for scaling this specific metric list
             mins = full_dataset[feature_cols].min().fillna(0).astype(float)
             maxs = full_dataset[feature_cols].max().fillna(0).astype(float)
             def scale_stats(row):
                 row_vals = row[feature_cols].astype(float)
                 normalized = ((row_vals - mins) / (maxs - mins + 1e-5)) * 100
                 return normalized.round().astype(int).tolist()
-            # 3. Format Target Player profile
+
+            def get_raw_stats(row):
+                return row[feature_cols].astype(float).round(2).tolist()
+
             player_entry = {
                 "Player": str(target_row["nombre"]),
                 "Pos": pos_label,
@@ -183,12 +179,11 @@ def generate_cluster_specific_ui_json(position_configs, output_filename="scoutin
                 },
                 "RadarLabels": list(feature_cols),
                 "MainPlayerStats": scale_stats(target_row),
+                "RawPlayerStats": get_raw_stats(target_row),
                 "SimilarPlayers": []
             }
-            # 4. Map the matching percentage
             max_dist = similar_rows["Statistic_compatibility"].max() if len(similar_rows) > 0 else 1.0
             if max_dist == 0: max_dist = 1.0
-            # 5. Process the stylistic matches using the exact same columns
             for _, match_row in similar_rows.iterrows():
                 dist = match_row["Statistic_compatibility"]
                 pct = max(60, 100 - (dist / (max_dist + 1e-5) * 35))
@@ -196,7 +191,8 @@ def generate_cluster_specific_ui_json(position_configs, output_filename="scoutin
                     "Name": str(match_row["nombre"]),
                     "Team": str(match_row["equipo"]),
                     "MatchPercentage": f"{int(pct)}%",
-                    "Stats": scale_stats(match_row)
+                    "Stats": scale_stats(match_row),
+                    "RawStats": get_raw_stats(match_row)
                 }
                 player_entry["SimilarPlayers"].append(similar_entry)
             master_database.append(player_entry)
@@ -204,12 +200,12 @@ def generate_cluster_specific_ui_json(position_configs, output_filename="scoutin
     with open(output_filename, "w", encoding="utf-8") as f:
         json.dump(master_database, f, indent=2, ensure_ascii=False)
         
-    print(f"Database unified perfectly! File saved to '{output_filename}' ({len(master_database)} profiles).")
+    print(f"File saved to '{output_filename}' ({len(master_database)} profiles).")
 
 
 #-------------------------------------------------------------------
 
-df = pl.read_parquet('data/raw/new_data.parquet')
+df = pl.scan_parquet('data/raw/new_data.parquet').filter(pl.col('nombre').str.contains('Gavi')).collect()
 
 # posiciones
 df.select(pl.col('posicion').unique())
@@ -314,7 +310,6 @@ for_kmeans = KMeans(
         ).fit(X_for_scaled)
 
 forwards['cluster'] = for_kmeans.labels_
-
 forwards['cluster'].value_counts()
 
 forward_clusters = forwards[['nombre', 'cluster']].sort_values(['cluster'])
