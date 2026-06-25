@@ -922,8 +922,8 @@
           </div>
           <div class="table-wrap">
             <table id="games-table">
-              <thead><tr><th onclick="sortTable('games-table',0)">Fecha</th><th>Competición</th><th>Local</th><th>Resultado</th><th>Visitante</th><th>R</th><th>xG</th><th>xGA</th></tr></thead>
-              <tbody id="games-tbody"><tr><td colspan="8" class="loading">Cargando...</td></tr></tbody>
+              <thead><tr><th onclick="sortTable('games-table',0)">Fecha</th><th>Competición</th><th>Local</th><th>Resultado</th><th>Visitante</th><th>Resultado</th></tr></thead>
+              <tbody id="games-tbody"><tr><td colspan="6" class="loading">Cargando...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -3449,8 +3449,6 @@ async function loadGames() {
           away: g.away_club_name || g.away_club_id, 
           score: `${g.home_club_goals} - ${g.away_club_goals}`, 
           result: res, 
-          xG: '—', 
-          xGA: '—' 
         };
       });
     }
@@ -3512,8 +3510,6 @@ function renderGames() {
       <td style="text-align:center;font-weight:700;">${g.score}</td>
       <td>${g.away}</td>
       <td><span class="badge badge-${g.result}">${g.result}</span></td>
-      <td>${g.xG}</td>
-      <td>${g.xGA}</td>
     </tr>`;
   }).join('');
 }
