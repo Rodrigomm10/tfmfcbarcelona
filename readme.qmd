@@ -86,7 +86,7 @@ El enfoque combina tres técnicas clásicas del aprendizaje no supervisado y an�
 
 
 
-## Ingeniería de características por posición !!! Revisar variables de los diagramas radares
+## Ingeniería de características por posición
 Una aportación metodológica destacable es que el modelo no aplica un único conjunto de variables a todos los jugadores, sino que define características (features) específicas para cada posición: delanteros (FW), mediocampistas (MF), defensas (DF) y porteros (GK). Todas las métricas de volumen se normalizaron **por 90 minutos** diviendo el valor de la variable entre '90s' derivado del tiempo jugado, lo que permite comparar jugadores con distintos tiempos o cargas de minutos en igualdad de condiciones. Se aplica además un mínimo de **450 minutos jugados** para excluir muestras poco representativas.
 
 Junto a las métricas por 90 se construyen ratios de eficencia según la posición del jugador y las diferentes características según la misma posición (Ej. utilizar diferentes variables para un delantero centro, que para un extremo). Los conjuntos de variables por posición son los siguientes: 
@@ -183,73 +183,3 @@ python supervised_model.py
 python app.py
 # Abrir http://localhost:8080
 ```
-
-
-
-
-
-## Requisitos
-
-- Python 3.9 o superior (viene con macOS, verifica con `python3 --version`)
-
-## Instalación (solo la primera vez)
-
-
-# 1. Ir a la carpeta del proyecto
-cd "tfmfcbarcelona"
-
-# 2. Crear entorno virtual
-python3 -m venv venv
-
-# 3. Activar el entorno
-source venvm/bin/activate
-
-# 4. Instalar dependencias
-pip install flask pandas requests beautifulsoup4
-
-
-## Uso
-
-Cada vez que quieras usar el dashboard:
-
-# Activar entorno (si no está activo)
-source venv/bin/activate
-
-# Paso 1: Procesar los datos de Kaggle (solo hace falta una vez, o al actualizar CSVs)
-python scripts/01_process_data.py
-
-# Paso 2: Descargar datos de Understat (requiere internet, tarda ~2 minutos)
-python scripts/02_fetch_understat.py
-
-# Paso 3: Lanzar el servidor
-python app.py
-
-Luego abre el navegador en: **http://localhost:5000**
-
-## Estructura
-
-barca-dashboard/
-├── data/
-│   ├── raw/           ← CSVs originales de Kaggle
-│   └── processed/     ← JSONs generados por los scripts
-├── scripts/
-│   ├── 01_process_data.py    ← limpia CSVs → JSONs
-│   └── 02_fetch_understat.py ← scraping Understat → JSONs
-├── templates/
-│   └── index.html     ← interfaz web completa
-├── app.py             ← servidor Flask (API + web)
-└── README.md
-
-## Secciones del dashboard
-
-- **Equipo**: KPIs, xG/xGA por partido, evolución de puntos, forma reciente
-- **Partidos**: tabla de resultados filtrable con competición y resultado
-- **Jugadores**: estadísticas de los 29 jugadores del Barça, xG por jugador (Understat)
-- **Plantilla & Mercado**: valor histórico de plantilla, transferencias con fee y valor de mercado
-- **Comparativa Europa**: tablas de LaLiga, Premier, Bundesliga, Serie A y Ligue 1 con xG/xGA
-
-## Fuentes de datos
-
-- [Kaggle – Player Scores (Transfermarkt)](https://www.kaggle.com/datasets/davidcariboo/player-scores)
-- [Kaggle – Football Players Stats 2025/26](https://www.kaggle.com/datasets/hubertsidorowicz/football-players-stats-2025-2026)
-- [Understat](https://understat.com) – xG, xGA, NPxG, xPTS
