@@ -136,6 +136,8 @@ data = data.with_columns([
     (pl.col("Tackles Won").cast(pl.Float64) / (pl.col("Total Tackles").cast(pl.Float64) + 1e-5)).alias("pct_successful_tackles")
 ])
 
+data.write_parquet('data/raw/all_players_data.parquet')
+
 cols = [
     "market_value_in_eur",  
     "date",  
@@ -162,14 +164,37 @@ cols = [
     "Foul Won Penalty",
 ]
 
+data = pl.read_parquet('data/raw/all_players_data.parquet', try_parse_hive_dates = True)
+
 data = (
-        data.filter(pl.col('posicion') != 'Goalkeeper')
-        .select(cols)
-        .with_columns(
-            ((pl.col('date') - pl.col('date_of_birth')).dt.total_days() /  365.25)
-            .round(1)
-            .alias('age')
-            )
-        .drop(['date', 'date_of_birth'])
-        .drop_nulls()
-        )
+    data.filter(pl.col("posicion") != "Goalkeeper")
+    .select(cols)
+    .with_columns(
+        [
+            pl.col("date").cast(pl.Date),
+            pl.col("date_of_birth")
+            .str.to_datetime(format="%Y-%m-%d %H:%M:%S")
+            .cast(pl.Date),
+        ]
+    )
+    .with_columns(
+        ((pl.col("date") - pl.col("date_of_birth")).dt.total_days() / 365.25)
+        .round(1)
+        .alias("age")
+    )
+    .drop(["date", "date_of_birth"])
+    .with_columns(pl.all().exclude("liga").fill_null(0))
+)
+
+data.write_parquet('data/raw/supervised_data.parquet')
+
+# visualizaciones
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = data.to_pandas()
+
+
+sns.displot(x = 'market_value_in_eur', data = data, kind = 'kde')
+plt.show()
