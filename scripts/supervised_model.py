@@ -141,6 +141,7 @@ data.write_parquet('data/raw/all_players_data.parquet')
 cols = [
     "market_value_in_eur",  
     "date",  
+    "posicion",
     "date_of_birth",  
     "liga",  
     "temporada",  
@@ -217,6 +218,9 @@ plt.show()
 sns.kdeplot(x = 'log_market_val', data = data, hue = 'liga')
 plt.show()
 
+sns.boxplot(x = 'log_market_val', data = data, hue = 'posicion')
+plt.show()
+
 sns.relplot(x = 'goals_per_90', y = 'log_market_val', data = data)
 plt.show()
 
@@ -237,6 +241,7 @@ import statsmodels.formula.api as smf
 
 features = [
     "C(liga)",
+    "C(posicion)",
     "Q('90s')",
     "goals_per_90",
     "total_shots_per_90",
@@ -310,18 +315,23 @@ test_data['Foul Won Penalty'] = pd.to_numeric( test_data['Foul Won Penalty'], er
 
 X_train_encoded = train_data.drop(['market_value_in_eur', 'log_market_val'], axis = 1)
 y_train = train_data['log_market_val']
+y_train_norm = train_data['market_value_in_eur']
 
 X_test_encoded = test_data.drop(['market_value_in_eur', 'log_market_val'], axis = 1)
 y_test = test_data['market_value_in_eur']
 
-le = LabelEncoder()
+le_liga = LabelEncoder()
+le_posicion = LabelEncoder()
 
-X_train_encoded['liga'] = le.fit_transform(X_train['liga'])
-X_test_encoded['liga'] = le.transform(X_test['liga'])
+X_train_encoded['liga'] = le_liga.fit_transform(X_train_encoded['liga'])
+X_train_encoded['posicion'] = le_posicion.fit_transform(X_train_encoded['posicion'])
+
+X_test_encoded['liga'] = le_liga.transform(X_test_encoded['liga'])
+X_test_encoded['posicion'] = le_posicion.transform(X_test_encoded['posicion'])
 
 terms = []
-for col in X_train.columns:
-    if col == 'liga':
+for col in X_train_encoded.columns:
+    if col == 'liga' or col == 'posicion':
         terms.append(f(X_train_encoded.columns.get_loc(col)))
     else:
         terms.append(s(X_train_encoded.columns.get_loc(col)))
@@ -331,31 +341,138 @@ gam_formula = sum(terms[1:], terms[0])
 model_3 = LinearGAM(gam_formula).fit(X_train_encoded, y_train)
 
 
-fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(18, 5))
+fig, (ax0, ax1, ax2, ax3) = plt.subplots(1, 4, figsize=(18, 5))
 XX_liga = model_3.generate_X_grid(term=0)
 pdep_liga, conf_liga = model_3.partial_dependence(term=0, X=XX_liga, width=0.95)
 ax0.plot(XX_liga[:, 0], pdep_liga, c="darkblue", lw=2)
 ax0.plot(XX_liga[:, 0], conf_liga, c="crimson", linestyle="--", lw=1)
-ax0.set_title("Partial Dependence of liga")
-ax0.set_xlabel("Encoded League ID")
+ax0.set_title("Partial Dependence of POsition")
+ax0.set_xlabel("Position Encoded")
 ax0.set_ylabel("Effect on Log Market Value")
 XX_90s = model_3.generate_X_grid(term=1)
 pdep_90s, conf_90s = model_3.partial_dependence(term=1, X=XX_90s, width=0.95)
 ax1.plot(XX_90s[:, 1], pdep_90s, c="darkblue", lw=2)
 ax1.plot(XX_90s[:, 1], conf_90s, c="crimson", linestyle="--", lw=1)
-ax1.set_title("Partial Dependence of 90s")
-ax1.set_xlabel("Raw 90s Played (0 to 38)")
-XX_age = model_3.generate_X_grid(term=19)
-pdep_age, conf_age = model_3.partial_dependence(term=19, X=XX_age, width=0.95)
-ax2.plot(XX_age[:, 19], pdep_age, c="darkblue", lw=2)
-ax2.plot(XX_age[:, 19], conf_age, c="crimson", linestyle="--", lw=1)
+ax1.set_title("Partial dependence of liga")
+ax1.set_xlabel("Liga Encoded Value")
+XX_age = model_3.generate_X_grid(term=20)
+pdep_age, conf_age = model_3.partial_dependence(term=20, X=XX_age, width=0.95)
+ax2.plot(XX_age[:, 20], pdep_age, c="darkblue", lw=2)
+ax2.plot(XX_age[:, 20], conf_age, c="crimson", linestyle="--", lw=1)
 ax2.set_title("Partial Dependence of age")
 ax2.set_xlabel("Raw Age in Years (17 to 35+)")
+XX_goals = model_3.generate_X_grid(term=3)
+pdep_goals, conf_goals = model_3.partial_dependence(term=3, X=XX_goals, width=0.95)
+ax3.plot(XX_goals[:, 3], pdep_goals, c="darkblue", lw=2)
+ax3.plot(XX_goals[:, 3], conf_goals, c="crimson", linestyle="--", lw=1)
+ax3.set_title("Partial Dependece of Goals per 90")
+ax3.set_xlabel("Goals")
 plt.tight_layout()
 plt.show()
 
 
 
 model3_pred = np.expm1( model_3.predict(X_test_encoded) )
-
 model3_res = get_metrics(y_test, model3_pred)
+
+
+# usamos models de ensemblaje
+
+import xgboost as xgb
+
+xgb_model = xgb.XGBRegressor(
+        n_estimators = 500,
+        max_depth = 5,
+        learning_rate = 0.05,
+        subsample = 0.8,
+        colsample_bytree = 0.8,
+        random_state = 69
+        )
+
+xgb_model.fit(X_train_encoded, y_train)
+
+### Checamos el insample accuracy
+
+in_sample_pred = np.expm1(xgb_model.predict(X_train_encoded))
+get_metrics(y_train_norm, in_sample_pred)
+
+
+xgb_model.score(X_train_encoded, y_train)
+
+importances = pd.Series(
+        xgb_model.feature_importances_, index = X_train_encoded.columns
+        ).sort_values(ascending = False)
+
+# Checamos el out of sample
+
+model4_pred = np.expm1(xgb_model.predict(X_test_encoded))
+model4_res = get_metrics(model4_pred, y_test)
+
+
+## hacemos un hyperparameter tuning 
+
+xgb_base = xgb.XGBRegressor(random_state = 69)
+
+param_grid = {
+    "n_estimators": [300, 500, 700],
+    "max_depth": [3, 4],  
+    "learning_rate": [0.01, 0.03, 0.05],
+    "min_child_weight": [3, 5, 7],  
+    "gamma": [0, 0.1, 0.2],  
+    "subsample": [0.7, 0.8],  
+    "colsample_bytree": [0.7, 0.8],  
+}
+
+from sklearn.model_selection import RandomizedSearchCV
+
+xgb_search = RandomizedSearchCV(
+        estimator = xgb_base,
+        param_distributions = param_grid,
+        n_iter = 20,
+        scoring = 'neg_mean_squared_error',
+        cv = 5,
+        verbose = 1,
+        random_state = 69,
+        n_jobs = -1
+        )
+
+xgb_search.fit(X_train_encoded, y_train)
+
+model_5 = xgb_search.best_estimator_
+
+model_5_is = np.expm1(model_5.predict(X_train_encoded))
+get_metrics(y_train_norm, model_5_is)
+
+
+model_5.score(X_train_encoded, y_train)
+
+importances = pd.Series(
+        xgb_model.feature_importances_, index = X_train_encoded.columns
+        ).sort_values(ascending = False)
+
+# Checamos el out of sample
+
+model5_pred = np.expm1(model_5.predict(X_test_encoded))
+model5_res = get_metrics(model5_pred, y_test)
+
+
+
+
+### Usamos codigo para crear un Cross Validation
+from sklearn.model_selection import KFold
+
+def calculate_CV_metrics(actual, predicted):
+    mae = np.mean(np.abs(actual - predicted))
+    rmse = np.sqrt(np.mean((actual - predicted) ** 2))
+    mape = np.mean(np.abs((actual - predicted) / y_true_euro)) * 100
+    return {"MAE": mae, "RMSE": rmse, "MAPE": mape}
+
+
+kf = KFold(n_splits = 5, shuffle = True, random_state = 69)
+
+cv_results = {"Linear Regression": [],  "GAM": [], "XGBoost": []}
+
+for fold, (train_idx, val_idx) in enumerate(kf.split(train_data)):
+    
+    train_cv, val_cv = train_data.iloc[train_idx], train_data.iloc[val_idx]
+    y_log, y_abs = train_data.loc[]
