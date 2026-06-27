@@ -6,12 +6,24 @@ Acceder:  http://localhost:5000
 
 import os
 import json
-from flask import Flask, jsonify, render_template, abort
+from flask import Flask, jsonify, render_template, abort, request
+import xgboost as xgb
+import numpy as np
+import pandas as pd
+
+
+
 
 app = Flask(__name__)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 PROCESSED = os.path.join(BASE, "data", "processed")
+
+print('Loading XGBoost Model')
+xgb_model = xgb.XGBRegressor()
+xgb_model.load_model('models/xgboost.json')
+MODEL_FEATURES = xgb_model.get_booster().feature_names
+print("Predictive Model Loaded")
 
 
 def load_json(filename):
@@ -21,6 +33,32 @@ def load_json(filename):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
+@app.route('/api/market-players', methods=['GET'])
+def get_market_players():
+    try:
+        with open('data/processed/inference.json', 'r', encoding = 'utf-8') as f:
+            players_data = json.load(f)
+        return jsonify(players_data)
+    except Exception as e:
+        return jsonify({'error', str(e)}), 500
+
+
+@app.route('/api/predict-value', methods=['POST'])
+def predict_value():
+    """Receives tweaked stats from the frontend, predicts value, and returns it."""
+    try:
+        input_data = request.json
+        df = pd.DataFrame([input_data])
+        df_features = df[MODEL_FEATURES]
+        
+        prediction = np.expm1( xgb_model.predict(df_features) )
+        estimated_value = round(float(prediction[0]), 2)
+        return jsonify({
+            "status": "success",
+            "predicted_value": estimated_value
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 # ─── FRONTEND ────────────────────────────────
 @app.route("/")

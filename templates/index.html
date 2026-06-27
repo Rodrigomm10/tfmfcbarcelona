@@ -1024,6 +1024,7 @@
         <div class="card"><h2>Valor de mercado de la plantilla</h2><div class="chart-container"><canvas id="squad-value-chart"></canvas></div></div>
         <div class="card"><h2>Resumen de transferencias</h2><div id="transfer-summary" class="loading">Cargando...</div></div>
       </div>
+      
       <div class="card">
         <h2>Movimientos de mercado</h2>
         <div class="filter-bar">
@@ -1037,8 +1038,40 @@
           <tbody id="transfers-tbody"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
         </table></div>
       </div>
-    </div>
 
+      <div class="card" style="border: 1px solid var(--barca-gold);">
+        <h2 style="color: var(--barca-gold); display: flex; align-items: center; gap: 8px;">
+          Predictor de Valor con IA (XGBoost)
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+          Selecciona un jugador de tu plantilla, ajusta sus estadísticas y deja que el modelo estime su nuevo valor de mercado en tiempo real.
+        </p>
+
+        <div style="margin-bottom: 20px;">
+          <label for="ai-player-select" style="font-size: 0.85rem; font-weight: bold; margin-right: 10px;">Seleccionar Jugador:</label>
+          <select id="ai-player-select" onchange="loadPlayerStats()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; width: 100%; max-width: 300px; outline: none;">
+            <option value="">-- Elige un jugador --</option>
+            </select>
+        </div>
+
+        <div id="ai-stats-container" style="display: none;">
+          <h3 style="font-size: 0.9rem; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Simulador de Estadísticas</h3>
+          
+          <div id="ai-inputs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #1c2128; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <button onclick="predictMarketValue()" style="background: var(--barca-gold); color: #000; border: none; padding: 10px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+              Calcular Valor
+            </button>
+            
+            <div style="text-align: right;">
+              <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Valor Estimado</div>
+              <div id="ai-result" style="font-size: 2rem; font-weight: 900; color: var(--success);">€ -- </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
     <!-- COMPARATIVA EUROPA -->
     <div id="sec-europa" class="section">
       <div class="card">
@@ -3882,14 +3915,25 @@ function renderMinutesChart(players) {
 
 // SECCIÓN MERCADO
 let allTransfers=[];
+let globalMarketPlayers=[]; // NUEVO: Array para guardar los jugadores de la IA
+
 async function loadMercado() {
   window._mercadoLoaded=true;
   try {
-    const [transfers,history]=await Promise.allSettled([fetchJSON('/api/barca/transfers'),fetchJSON('/api/barca/squad-value-history')]);
+    // NUEVO: Añadimos fetchJSON('/api/market-players') a tu Promise múltiple
+    const [transfers, history, aiPlayers] = await Promise.allSettled([
+        fetchJSON('/api/barca/transfers'),
+        fetchJSON('/api/barca/squad-value-history'),
+        fetchJSON('/api/market-players') // <-- NUEVA RUTA
+    ]);
+
+    // 1. Cargar Gráfico (Tu código original)
     if (history.status==='fulfilled' && history.value.length) {
       const h=history.value.filter(d=>d.date&&d.market_value_in_eur>0);
       new Chart(document.getElementById('squad-value-chart').getContext('2d'),{type:'line',data:{labels:h.map(d=>d.date?.substring(0,7)),datasets:[{label:'Valor plantilla (€)',data:h.map(d=>(d.market_value_in_eur/1e6).toFixed(1)),borderColor:'#EDBB00',backgroundColor:'rgba(237,187,0,0.1)',fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#8b949e',maxRotation:45,font:{size:10},maxTicksLimit:20},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e',callback:v=>v+'M'},grid:{color:'#30363d'}}}}});
     }
+    
+    // 2. Cargar Tabla de Transferencias (Tu código original)
     if (transfers.status==='fulfilled') {
       allTransfers=transfers.value;
       const ins=allTransfers.filter(t=>t.direction==='IN'), outs=allTransfers.filter(t=>t.direction==='OUT');
@@ -3899,14 +3943,114 @@ async function loadMercado() {
       seasons.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
       filterTransfers();
     }
-  } catch(e) { document.getElementById('transfer-summary').innerHTML=`<div class="error-msg">${e.message}</div>`; }
+
+    // 3. NUEVO: Llenar el selector del Predictor de IA
+    if (aiPlayers.status === 'fulfilled') {
+        globalMarketPlayers = aiPlayers.value;
+        const select = document.getElementById('ai-player-select');
+        if (select) {
+            select.innerHTML = '<option value="">-- Elige un jugador --</option>';
+            globalMarketPlayers.forEach((p, index) => {
+                let option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${p.full_name} (${p.current_club_name})`;
+                select.appendChild(option);
+            });
+        }
+    }
+  } catch(e) { 
+    document.getElementById('transfer-summary').innerHTML=`<div class="error-msg">${e.message}</div>`; 
+  }
 }
+
+// Filtro original
 function filterTransfers() {
   const dir=document.getElementById('transfer-dir-filter').value, season=document.getElementById('transfer-season-filter').value;
   const filtered=allTransfers.filter(t=>(!dir||t.direction===dir)&&(!season||t.transfer_season===season)).sort((a,b)=>parseFloat(b.transfer_fee||0)-parseFloat(a.transfer_fee||0));
   const tbody=document.getElementById('transfers-tbody');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="7" class="loading">Sin resultados</td></tr>';return;}
   tbody.innerHTML=filtered.map(t=>`<tr><td><strong>${t.player_name||'—'}</strong></td><td><span class="badge badge-${t.direction}">${t.direction}</span></td><td>${t.from_club_name||'—'}</td><td>${t.to_club_name||'—'}</td><td>${t.transfer_season||'—'}</td><td>${fmtEur(t.transfer_fee)}</td><td>${fmtEur(t.market_value_in_eur)}</td></tr>`).join('');
+}
+
+// -----------------------------------------------------------------
+// NUEVAS FUNCIONES DEL PREDICTOR IA
+// -----------------------------------------------------------------
+
+function loadPlayerStats() {
+    const select = document.getElementById('ai-player-select');
+    const container = document.getElementById('ai-stats-container');
+    const grid = document.getElementById('ai-inputs-grid');
+    
+    grid.innerHTML = '';
+    document.getElementById('ai-result').textContent = '€ -- M';
+
+    if (!select || select.value === "") {
+        container.style.display = 'none';
+        return;
+    }
+
+    const player = globalMarketPlayers[select.value];
+    container.style.display = 'block';
+
+    // Omitimos texto, solo queremos sliders/inputs para números
+    const ignoreColumns = ['full_name', 'current_club_name', 'liga', 'country_of_citizenship', 'agent_name', 'posicion', 'club_bucket'];
+
+    for (const [key, value] of Object.entries(player)) {
+        if (!ignoreColumns.includes(key)) {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label style="display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" title="${key}">
+                    ${key.replace(/_/g, ' ').toUpperCase()}
+                </label>
+                <input type="number" step="any" id="input-${key}" value="${value}" 
+                       style="width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px; border-radius: 4px;">
+            `;
+            grid.appendChild(div);
+        }
+    }
+}
+
+async function predictMarketValue() {
+    const select = document.getElementById('ai-player-select');
+    const resultBox = document.getElementById('ai-result');
+    
+    if (!select || select.value === "") return;
+
+    let originalData = globalMarketPlayers[select.value];
+    let payload = { ...originalData }; 
+
+    // Sobrescribir payload con lo que el usuario escribió en los inputs
+    const inputs = document.querySelectorAll('#ai-inputs-grid input');
+    inputs.forEach(input => {
+        const key = input.id.replace('input-', '');
+        payload[key] = parseFloat(input.value) || 0; 
+    });
+
+    try {
+        resultBox.textContent = "Calculando...";
+        resultBox.style.color = "var(--warn)";
+
+        const response = await fetch('/api/predict-value', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            resultBox.textContent = `€ ${data.predicted_value.toLocaleString()} `;
+            resultBox.style.color = "var(--success)";
+        } else {
+            resultBox.textContent = "Error";
+            resultBox.style.color = "var(--danger)";
+            console.error(data.message);
+        }
+    } catch (error) {
+        resultBox.textContent = "Error";
+        resultBox.style.color = "var(--danger)";
+        console.error("Prediction failed:", error);
+    }
 }
 
 // SECCIÓN EUROPA (comparativa)
