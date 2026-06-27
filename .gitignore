@@ -5,3 +5,4 @@ __pycache__/
 .Rhistory
 CONTEXTO_2TFM.md
 CONTEXTO_TFM.md
+scripts/supervised_model.py
