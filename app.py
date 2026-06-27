@@ -65,6 +65,20 @@ def predict_value():
 def adv_stats():
     data = load_json('andvanced_stats.json')
     return jsonify(data)
+
+@app.route('/api/club-stats', methods=['GET'])
+def get_club_stats():
+    """Reads the aggregated club analysis JSON and sends it to the frontend."""
+    try:
+        with open('data/processed/barca_club_analysis.json', 'r', encoding='utf-8') as f:
+            stats_data = json.load(f)
+        if isinstance(stats_data, list) and len(stats_data) > 0:
+            return jsonify(stats_data[0])
+        return jsonify(stats_data)
+    except Exception as e:
+        print(f"Error loading club stats: {e}")
+        return jsonify({"error": str(e)}), 500
+
 # ─── FRONTEND ────────────────────────────────
 @app.route("/")
 def index():
