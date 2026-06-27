@@ -992,56 +992,60 @@
       <div class="card"><h2>Resumen de copas</h2><div id="copas-summary" class="loading">Cargando...</div></div>
     </div>
 
-    <!-- STATS AVANZADAS -->
-    <div id="sec-avanzadas" class="section">
+   <div id="sec-avanzadas" class="section">
+      
       <div class="card">
-        <h2>Estadísticas avanzadas por jugador</h2>
+        <h2>Estadísticas avanzadas por jugador (Per 90)</h2>
         <div class="filter-bar">
           <input id="adv-search" type="text" placeholder="Buscar jugador..." oninput="filterAdvanced()">
           <select id="adv-pos-filter" onchange="filterAdvanced()">
             <option value="">Todas las posiciones</option>
-            <option value="GK">Portero</option><option value="DF">Defensa</option>
-            <option value="MF">Centrocampista</option><option value="FW">Delantero</option>
+            <option value="Goalkeeper">Portero</option>
+            <option value="Defender">Defensa</option>
+            <option value="Midfielder">Centrocampista</option>
+            <option value="Forward">Delantero</option>
           </select>
-          <select id="adv-view" onchange="filterAdvanced()">
-            <option value="shooting">Disparo</option>
-            <option value="defense">Defensa & Duelos</option>
-            <option value="playing_time">Tiempo de juego</option>
-            <option value="goalkeeper">Porteros</option>
-          </select>
+          </div>
+        
+        <div class="table-wrap">
+          <table id="adv-table">
+            <thead id="adv-thead">
+              <tr>
+                <th>Jugador</th>
+                <th>Pos</th>
+                <th>90s</th>
+                <th>G/90</th>
+                <th>A/90</th>
+                <th>Pases Cl./90</th>
+                <th>% Pase</th>
+                <th>Toques 3/4</th>
+                <th>Rec/90</th>
+                <th>Tackles/90</th>
+                <th>Int/90</th>
+              </tr>
+            </thead>
+            <tbody id="adv-tbody">
+              <tr><td colspan="11" class="loading">Cargando...</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="table-wrap"><table id="adv-table"><thead id="adv-thead"></thead><tbody id="adv-tbody"><tr><td colspan="10" class="loading">Cargando...</td></tr></tbody></table></div>
       </div>
-      <div class="grid-2">
-        <div class="card"><h2>Goles vs xG (Understat)</h2><div class="chart-container"><canvas id="goals-xg-chart"></canvas></div></div>
-        <div class="card"><h2>Minutos jugados por jugador</h2><div class="chart-container"><canvas id="minutes-chart"></canvas></div></div>
+
+      <div class="card">
+        <h2>Participación (Partidos de 90 mins) por jugador</h2>
+        <div class="chart-container">
+          <canvas id="minutes-chart"></canvas>
+        </div>
       </div>
+      
     </div>
 
     <!-- MERCADO -->
-    <div id="sec-mercado" class="section">
-      <div class="grid-2">
-        <div class="card"><h2>Valor de mercado de la plantilla</h2><div class="chart-container"><canvas id="squad-value-chart"></canvas></div></div>
-        <div class="card"><h2>Resumen de transferencias</h2><div id="transfer-summary" class="loading">Cargando...</div></div>
-      </div>
+<div id="sec-mercado" class="section">
       
-      <div class="card">
-        <h2>Movimientos de mercado</h2>
-        <div class="filter-bar">
-          <select id="transfer-dir-filter" onchange="filterTransfers()">
-            <option value="">Entradas y salidas</option><option value="IN">Entradas</option><option value="OUT">Salidas</option>
-          </select>
-          <select id="transfer-season-filter" onchange="filterTransfers()"><option value="">Todas las temporadas</option></select>
-        </div>
-        <div class="table-wrap"><table id="transfers-table">
-          <thead><tr><th>Jugador</th><th>Dir.</th><th>De</th><th>A</th><th>Temporada</th><th>Fee (€)</th><th>Valor mercado (€)</th></tr></thead>
-          <tbody id="transfers-tbody"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
-        </table></div>
-      </div>
-
       <div class="card" style="border: 1px solid var(--barca-gold);">
         <h2 style="color: var(--barca-gold); display: flex; align-items: center; gap: 8px;">
-          Predictor de Valor con IA (XGBoost)
+          Predictor de Valor con Supervised Learning (XGBoost)
         </h2>
         <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
           Selecciona un jugador de tu plantilla, ajusta sus estadísticas y deja que el modelo estime su nuevo valor de mercado en tiempo real.
@@ -1051,7 +1055,7 @@
           <label for="ai-player-select" style="font-size: 0.85rem; font-weight: bold; margin-right: 10px;">Seleccionar Jugador:</label>
           <select id="ai-player-select" onchange="loadPlayerStats()" style="background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; width: 100%; max-width: 300px; outline: none;">
             <option value="">-- Elige un jugador --</option>
-            </select>
+          </select>
         </div>
 
         <div id="ai-stats-container" style="display: none;">
@@ -1066,12 +1070,13 @@
             
             <div style="text-align: right;">
               <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Valor Estimado</div>
-              <div id="ai-result" style="font-size: 2rem; font-weight: 900; color: var(--success);">€ -- </div>
+              <div id="ai-result" style="font-size: 2rem; font-weight: 900; color: var(--success);">€ -- M</div>
             </div>
           </div>
         </div>
       </div>
-      </div>
+      
+    </div>
     <!-- COMPARATIVA EUROPA -->
     <div id="sec-europa" class="section">
       <div class="card">
@@ -3876,77 +3881,105 @@ async function loadCopas() {
   const cc=cs(copa),sc=cs(suc);
   document.getElementById('copas-summary').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"><div><h3 style="color:var(--barca-gold);margin-bottom:12px;">Copa del Rey</h3><div class="grid-4"><div class="stat-box"><div class="value">${cc.pj}</div><div class="label">PJ</div></div><div class="stat-box"><div class="value" style="color:var(--success);">${cc.w}</div><div class="label">V</div></div><div class="stat-box"><div class="value" style="color:var(--warn);">${cc.d}</div><div class="label">E</div></div><div class="stat-box"><div class="value" style="color:var(--danger);">${cc.l}</div><div class="label">D</div></div></div></div><div><h3 style="color:var(--barca-gold);margin-bottom:12px;">Supercopa</h3><div class="grid-4"><div class="stat-box"><div class="value">${sc.pj}</div><div class="label">PJ</div></div><div class="stat-box"><div class="value" style="color:var(--success);">${sc.w}</div><div class="label">V</div></div><div class="stat-box"><div class="value" style="color:var(--warn);">${sc.d}</div><div class="label">E</div></div><div class="stat-box"><div class="value" style="color:var(--danger);">${sc.l}</div><div class="label">D</div></div></div></div></div>`;
 }
-
 // SECCIÓN AVANZADAS
-let advancedPlayers=[], filteredAdvanced=[];
-const ADV_VIEWS = {
-  shooting:{ cols:['Player','Pos','90s','Gls','Sh','SoT','SoT%','Sh/90','SoT/90','G/Sh','G/SoT'], labels:['Jugador','Pos','90s','Goles','Tiros','TaP','TaP%','Tiros/90','TaP/90','G/Tiro','G/TaP'] },
-  defense:{ cols:['Player','Pos','90s','Int','TklW','Fls','Fld','CrdY','CrdR','Off'], labels:['Jugador','Pos','90s','Intercep.','Ent.ganadas','Faltas com.','Faltas rec.','TA','TR','F.juego'] },
-  playing_time:{ cols:['Player','Pos','MP','Starts','Min','Mn/MP','Min%','Subs','PPM','+/-','+/-90'], labels:['Jugador','Pos','PJ','Titul.','Minutos','Min/PJ','Min%','Suplente','Pts/90','+/-','±/90'] },
-  goalkeeper:{ cols:['Player','MP','Min','GA','GA90','SoTA','Saves','Save%','CS','CS%'], labels:['Portero','PJ','Minutos','GE','GE/90','Disparos','Paradas','%Par.','PA0','%PA0'] },
-};
+// ==========================================
+let advancedPlayers = [], filteredAdvanced = [];
+
 async function loadAvanzadas() {
-  window._avanzadasLoaded=true;
+  window._avanzadasLoaded = true;
   try {
-    advancedPlayers=await fetchJSON('/api/barca/players/advanced');
-    filteredAdvanced=advancedPlayers; filterAdvanced();
-    try { const u=await fetchJSON('/api/barca/players/understat'); renderGoalsXgChart(u); } catch(e) { document.getElementById('goals-xg-chart').parentElement.innerHTML='<p style="color:var(--muted);text-align:center;padding:40px;">Ejecuta 02_fetch_understat.py</p>'; }
+    // 1. Fetch the data
+    advancedPlayers = await fetchJSON('/api/advanced-stats'); 
+    
+    // PROTECCIÓN: Si la API devuelve null o no es un array, lanzamos un error claro.
+    if (!advancedPlayers || !Array.isArray(advancedPlayers)) {
+        throw new Error("La API devolvió null. Verifica que la ruta '/api/advanced-stats' exista en app.py y devuelva el JSON correctamente.");
+    }
+
+    filteredAdvanced = advancedPlayers; 
+    filterAdvanced(); 
     renderMinutesChart(advancedPlayers);
-  } catch(e) { document.getElementById('adv-tbody').innerHTML=`<tr><td colspan="10"><div class="error-msg">${e.message}</div></td></tr>`; }
+
+  } catch(e) { 
+    console.error("Error cargando avanzadas:", e);
+    const tbody = document.getElementById('adv-tbody');
+    if(tbody) tbody.innerHTML = `<tr><td colspan="11"><div class="error-msg" style="color: var(--danger); text-align: center; padding: 20px;">${e.message}</div></td></tr>`; 
+  }
 }
+
 function filterAdvanced() {
-  const q=document.getElementById('adv-search').value.toLowerCase();
-  const pos=document.getElementById('adv-pos-filter').value;
-  const view=document.getElementById('adv-view').value;
-  filteredAdvanced=advancedPlayers.filter(p=>(!q||(p.Player||'').toLowerCase().includes(q))&&(!pos||(p.Pos||'').includes(pos)));
-  const cfg=ADV_VIEWS[view];
-  document.getElementById('adv-thead').innerHTML='<tr>'+cfg.labels.map((l,i)=>`<th onclick="sortTable('adv-table',${i})">${l}</th>`).join('')+'</tr>';
-  let players=view==='goalkeeper'?filteredAdvanced.filter(p=>(p.Pos||'').includes('GK')):filteredAdvanced.filter(p=>!(p.Pos||'').includes('GK'));
-  document.getElementById('adv-tbody').innerHTML=players.map(p=>'<tr>'+cfg.cols.map(c=>`<td>${p[c]!==undefined&&p[c]!==''?p[c]:'—'}</td>`).join('')+'</tr>').join('')||'<tr><td colspan="10" class="loading">Sin datos</td></tr>';
-}
-function renderGoalsXgChart(uPlayers) {
-  const top=uPlayers.filter(p=>parseFloat(p.xG||0)>0||parseInt(p.goals||0)>0).sort((a,b)=>parseFloat(b.xG||0)-parseFloat(a.xG||0)).slice(0,12);
-  new Chart(document.getElementById('goals-xg-chart').getContext('2d'),{ type:'bar', data:{ labels:top.map(p=>p.player_name||p.name||'?'), datasets:[{label:'Goles',data:top.map(p=>parseInt(p.goals||0)),backgroundColor:'rgba(0,77,152,0.8)',borderRadius:4},{label:'xG',data:top.map(p=>parseFloat(p.xG||0).toFixed(2)),backgroundColor:'rgba(237,187,0,0.8)',borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#8b949e',maxRotation:35,font:{size:10}},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}}}}});
+  // PROTECCIÓN: Evitar que el filtro corra si advancedPlayers es null
+  if (!advancedPlayers || !Array.isArray(advancedPlayers)) return;
+
+  const searchInput = document.getElementById('adv-search');
+  const posFilter = document.getElementById('adv-pos-filter');
+  
+  const q = searchInput ? searchInput.value.toLowerCase() : '';
+  const pos = posFilter ? posFilter.value : '';
+
+  filteredAdvanced = advancedPlayers.filter(p => {
+      const matchName = !q || (p.name || '').toLowerCase().includes(q);
+      const matchPos = !pos || (p.posicion || '').includes(pos);
+      return matchName && matchPos;
+  });
+
+  const tbody = document.getElementById('adv-tbody');
+  
+  if (!filteredAdvanced.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="loading">Sin resultados</td></tr>';
+      return;
+  }
+
+  tbody.innerHTML = filteredAdvanced.map(p => {
+      return `<tr>
+        <td><strong>${p.name || '—'}</strong></td>
+        <td><span class="badge badge-IN">${p.posicion || '—'}</span></td>
+        <td>${p["90s"] ? p["90s"].toFixed(1) : '0.0'}</td>
+        <td>${p.goals_per_90 ? p.goals_per_90.toFixed(2) : '0.00'}</td>
+        <td>${p.assists_per_90 ? p.assists_per_90.toFixed(2) : '0.00'}</td>
+        <td>${p.key_passes_per_90 ? p.key_passes_per_90.toFixed(2) : '0.00'}</td>
+        <td style="color: var(--success); font-weight: bold;">
+            ${p.pct_pass_accuracy ? (p.pct_pass_accuracy * 100).toFixed(1) + '%' : '0%'}
+        </td>
+        <td>${p.final_third_touches_per_90 ? p.final_third_touches_per_90.toFixed(1) : '0.0'}</td>
+        <td>${p.recoveries_per_90 ? p.recoveries_per_90.toFixed(2) : '0.00'}</td>
+        <td>${p.tackles_won_per_90 ? p.tackles_won_per_90.toFixed(2) : '0.00'}</td>
+        <td>${p.interceptions_per_90 ? p.interceptions_per_90.toFixed(2) : '0.00'}</td>
+      </tr>`;
+  }).join('');
 }
 function renderMinutesChart(players) {
-  const sorted=[...players].filter(p=>parseInt(p.Min||0)>0).sort((a,b)=>parseInt(b.Min||0)-parseInt(a.Min||0)).slice(0,15);
-  new Chart(document.getElementById('minutes-chart').getContext('2d'),{ type:'bar', data:{ labels:sorted.map(p=>p.Player), datasets:[{label:'Minutos',data:sorted.map(p=>parseInt(p.Min||0)),backgroundColor:sorted.map(p=>(p.Pos||'').includes('GK')?'rgba(237,187,0,0.8)':(p.Pos||'').includes('DF')?'rgba(0,77,152,0.8)':(p.Pos||'').includes('MF')?'rgba(63,185,80,0.8)':'rgba(165,0,68,0.8)'),borderRadius:4}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{ticks:{color:'#e6edf3',font:{size:11}},grid:{color:'#30363d'}}}}});
+  // Actualizado para usar la métrica '90s' y las nuevas llaves ('name' y 'posicion')
+  const sorted = [...players].filter(p => parseFloat(p["90s"]||0)>0).sort((a,b)=>parseFloat(b["90s"]||0)-parseFloat(a["90s"]||0)).slice(0,15);
+  
+  new Chart(document.getElementById('minutes-chart').getContext('2d'),{ 
+      type:'bar', 
+      data:{ 
+          labels: sorted.map(p => p.name || 'Desconocido'), 
+          datasets:[{
+              label: 'Partidos (90s)', 
+              data: sorted.map(p => parseFloat(p["90s"]||0).toFixed(1)), 
+              backgroundColor: sorted.map(p => (p.posicion||'').includes('Goalkeeper')?'rgba(237,187,0,0.8)':(p.posicion||'').includes('Defender')?'rgba(0,77,152,0.8)':(p.posicion||'').includes('Midfielder')?'rgba(63,185,80,0.8)':'rgba(165,0,68,0.8)'),
+              borderRadius:4
+          }]
+      }, 
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{ticks:{color:'#e6edf3',font:{size:11}},grid:{color:'#30363d'}}}}
+  });
 }
+// ==========================================
+// SECCIÓN MERCADO (Solo Predictor IA)
+// ==========================================
+let globalMarketPlayers = [];
 
-// SECCIÓN MERCADO
-let allTransfers=[];
-let globalMarketPlayers=[]; // NUEVO: Array para guardar los jugadores de la IA
-
+// 1. Cargar la lista de jugadores cuando se abre la pestaña
 async function loadMercado() {
-  window._mercadoLoaded=true;
-  try {
-    // NUEVO: Añadimos fetchJSON('/api/market-players') a tu Promise múltiple
-    const [transfers, history, aiPlayers] = await Promise.allSettled([
-        fetchJSON('/api/barca/transfers'),
-        fetchJSON('/api/barca/squad-value-history'),
-        fetchJSON('/api/market-players') // <-- NUEVA RUTA
-    ]);
-
-    // 1. Cargar Gráfico (Tu código original)
-    if (history.status==='fulfilled' && history.value.length) {
-      const h=history.value.filter(d=>d.date&&d.market_value_in_eur>0);
-      new Chart(document.getElementById('squad-value-chart').getContext('2d'),{type:'line',data:{labels:h.map(d=>d.date?.substring(0,7)),datasets:[{label:'Valor plantilla (€)',data:h.map(d=>(d.market_value_in_eur/1e6).toFixed(1)),borderColor:'#EDBB00',backgroundColor:'rgba(237,187,0,0.1)',fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#8b949e',maxRotation:45,font:{size:10},maxTicksLimit:20},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e',callback:v=>v+'M'},grid:{color:'#30363d'}}}}});
-    }
-    
-    // 2. Cargar Tabla de Transferencias (Tu código original)
-    if (transfers.status==='fulfilled') {
-      allTransfers=transfers.value;
-      const ins=allTransfers.filter(t=>t.direction==='IN'), outs=allTransfers.filter(t=>t.direction==='OUT');
-      document.getElementById('transfer-summary').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div class="stat-box"><div class="value" style="color:var(--success);">${fmtEur(ins.reduce((a,t)=>a+parseFloat(t.transfer_fee||0),0))}</div><div class="label">Inversión total</div></div><div class="stat-box"><div class="value" style="color:var(--danger);">${fmtEur(outs.reduce((a,t)=>a+parseFloat(t.transfer_fee||0),0))}</div><div class="label">Ingresos ventas</div></div><div class="stat-box"><div class="value">${ins.length}</div><div class="label">Jugadores fichados</div></div><div class="stat-box"><div class="value">${outs.length}</div><div class="label">Jugadores vendidos</div></div></div>`;
-      const seasons=[...new Set(allTransfers.map(t=>t.transfer_season).filter(Boolean))].sort().reverse();
-      const sel=document.getElementById('transfer-season-filter');
-      seasons.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-      filterTransfers();
-    }
-
-    // 3. NUEVO: Llenar el selector del Predictor de IA
-    if (aiPlayers.status === 'fulfilled') {
-        globalMarketPlayers = aiPlayers.value;
+    window._mercadoLoaded = true;
+    try {
+        const response = await fetch('/api/market-players');
+        const players = await response.json();
+        
+        globalMarketPlayers = players;
+        
         const select = document.getElementById('ai-player-select');
         if (select) {
             select.innerHTML = '<option value="">-- Elige un jugador --</option>';
@@ -3957,25 +3990,12 @@ async function loadMercado() {
                 select.appendChild(option);
             });
         }
+    } catch(e) { 
+        console.error("Error al cargar jugadores de la IA:", e);
     }
-  } catch(e) { 
-    document.getElementById('transfer-summary').innerHTML=`<div class="error-msg">${e.message}</div>`; 
-  }
 }
 
-// Filtro original
-function filterTransfers() {
-  const dir=document.getElementById('transfer-dir-filter').value, season=document.getElementById('transfer-season-filter').value;
-  const filtered=allTransfers.filter(t=>(!dir||t.direction===dir)&&(!season||t.transfer_season===season)).sort((a,b)=>parseFloat(b.transfer_fee||0)-parseFloat(a.transfer_fee||0));
-  const tbody=document.getElementById('transfers-tbody');
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="7" class="loading">Sin resultados</td></tr>';return;}
-  tbody.innerHTML=filtered.map(t=>`<tr><td><strong>${t.player_name||'—'}</strong></td><td><span class="badge badge-${t.direction}">${t.direction}</span></td><td>${t.from_club_name||'—'}</td><td>${t.to_club_name||'—'}</td><td>${t.transfer_season||'—'}</td><td>${fmtEur(t.transfer_fee)}</td><td>${fmtEur(t.market_value_in_eur)}</td></tr>`).join('');
-}
-
-// -----------------------------------------------------------------
-// NUEVAS FUNCIONES DEL PREDICTOR IA
-// -----------------------------------------------------------------
-
+// 2. Crear los inputs cuando el usuario selecciona a un jugador
 function loadPlayerStats() {
     const select = document.getElementById('ai-player-select');
     const container = document.getElementById('ai-stats-container');
@@ -4010,6 +4030,7 @@ function loadPlayerStats() {
     }
 }
 
+// 3. Enviar los datos al backend (app.py) para obtener el precio
 async function predictMarketValue() {
     const select = document.getElementById('ai-player-select');
     const resultBox = document.getElementById('ai-result');
@@ -4039,7 +4060,7 @@ async function predictMarketValue() {
         const data = await response.json();
 
         if (data.status === 'success') {
-            resultBox.textContent = `€ ${data.predicted_value.toLocaleString()} `;
+            resultBox.textContent = `€ ${data.predicted_value.toLocaleString()} M`;
             resultBox.style.color = "var(--success)";
         } else {
             resultBox.textContent = "Error";

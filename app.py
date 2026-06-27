@@ -60,6 +60,11 @@ def predict_value():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+
+@app.route("/api/advanced-stats")
+def adv_stats():
+    data = load_json('andvanced_stats.json')
+    return jsonify(data)
 # ─── FRONTEND ────────────────────────────────
 @app.route("/")
 def index():
