@@ -23,9 +23,6 @@ BARCA_ID = 131  # Transfermarkt club_id del Barça
 # 1. PARTIDOS (games.csv)
 # ─────────────────────────────────────────────
 
-### Arreglando esta miesh 
-
-
 
 print("Procesando games.csv...")
 games = pd.read_csv(os.path.join(RAW, "games.csv"), low_memory=False)
