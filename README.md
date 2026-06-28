@@ -248,11 +248,66 @@ interpretación de qué define a cada clúster (por ejemplo, un grupo de
 defensas dominante en el juego aéreo frente a otro especializado en la
 pases largos, etc).
 
-# Modelo supervisado (`supervised_model.py`) !!! Complementar cuando terminemos el modelo
+# Modelo supervisado (`supervised_model.py`) 
 
-Este script prepara el conjunto de datos para un modelo supervisado de
-estimación del valor de mercado de los jugadores en las diferentes
-posiciones.
+El modelo supervisado constituye el segundo pilar analítico del proyecto. Su objetivo es **estimar el valor de mercado de un jugador** (en euros) a partir de su rendimiento estadístico y de un conjunto de atributos contextuales, de modo que el dashboard pueda valorar de forma objetiva el coste esperado de un potencial fichaje y contrastarlo con la valoración real de mercado. Se trata, por tanto, de un problema de **regresión**. [Regresión Lineal - Busca aproximar la relación de una dependencia entre una variable dependiente y una o más independientes]
+
+
+## Construcción del conjunto de datos
+
+La fase de preparación parte de los datos por jugador y los enriquece para disponer de una tabla de entrenamiento homogénea:
+
+1. **Resolución de identidades** contra el catálogo de jugadores de Transfermarkt (`players.csv`), emparejando por inicial del nombre y apellido, técnica análoga a la empleada en la capa de adquisición. De esta unión se recuperan atributos clave para la valoración: nacionalidad, agente,
+club actual y fecha de nacimiento.
+2. **Unión con la valoración de mercado más reciente** de cada jugador (`player_valuations.csv`), que constituye la variable objetivo.
+3. **Ingeniería de características** idéntica en filosofía a la del modelo no supervisado: métricas normalizadas por 90 minutos y ratios de eficiencia, con el mismo término de suavizado (`1e-5`) para evitar divisiones por cero.
+4. **Cálculo de la edad** a partir de la diferencia entre la fecha de la valoración y la fecha de nacimiento, variable determinante en el valor de un futbolista.
+5. **Exclusión de los porteros**, cuyo perfil estadístico no es comparable con el del resto de posiciones.
+
+
+Toda la canalización se apoya en la **evaluación perezosa** (*lazy evaluation*)
+de Polars (`scan_csv`/`scan_parquet` y `collect`), que optimiza la ejecución
+de las operaciones, y delega la fase de modelado en `pandas`.
+
+
+## Tratamiento de la variable objetivo
+
+El valor de mercado presenta una distribución fuertemente **asimétrica a la derecha** (*right-skewed*): la mayoría de los jugadores se concentra en valores bajos y unos pocos alcanzan cifras muy elevadas. Para corregirlo se aplica una **transformación logarítmica** (`log1p`), que comprime la cola y aproxima la distribución a una campana de Gauss. Esta normalización mejora el ajuste de los modelos y estabiliza la varianza; las predicciones se devuelven posteriormente a la escala original en euros mediante la transformación inversa
+(`expm1`).
+
+
+## Modelos evaluados
+
+Se entrenaron y compararon **tres modelos** de complejidad creciente, lo que permite contrastar la ganancia de precisión frente al coste de interpretabilidad:
+
+1. **Regresión lineal** (mínimos cuadrados ordinarios, `statsmodels`) — Modelo de referencia (*baseline*). Asume una relación estrictamente lineal y aditiva entre cada predictor y el valor de mercado. Es el más interpretable (cada coeficiente tiene una lectura directa) pero también el más rígido, ya que no captura relaciones no lineales ni interacciones.
+2. **Modelo Aditivo Generalizado (GAM)** (`pygam`) — Extensión flexible de la regresión lineal que sustituye los coeficientes fijos por **funciones suaves (*splines*)** para las variables continuas, manteniendo factores diferenciados para las categóricas. Permite que cada variable influya en el valor de forma **no lineal** sin renunciar por completo a la interpretabilidad, a través de los gráficos de **dependencia parcial**(*partial dependence*).
+3. **XGBoost** (`xgboost`) — Modelo de *ensemble* basado en árboles de decisión potenciados por gradiente (*gradient boosting*). Construye árboles de forma secuencial, corrigiendo cada uno los errores del anterior, y captura de manera automática relaciones no lineales e interacciones complejas entre variables. Es el menos transparente de los tres, pero habitualmente el más
+preciso. Se sometió además a un **ajuste de hiperparámetros** mediante búsqueda aleatoria con validación cruzada (`RandomizedSearchCV`).
+
+
+## Hallazgos del análisis exploratorio
+Los gráficos de dependencia parcial del GAM permitieron examinar **qué factores influyen en el valor de un jugador y de qué forma**. Dos hallazgos resultan especialmente relevantes:
+
+
+1. La **liga** en la que juega el futbolista tiene un efecto apreciable sobre su valoración, lo que refleja las diferencias de mercado y exposición entre las grandes competiciones europeas.
+2. La **edad** presenta una relación claramente **no lineal** con el valor: el valor crece en las primeras etapas de la carrera, alcanza un máximo en la franja de plenitud futbolística y decae en los jugadores veteranos. Esta curvatura justifica por sí sola el uso de modelos capaces de modelar no linealidades (GAM y XGBoost) frente a la regresión lineal simple.
+
+
+## Métricas de evaluación y selección del modelo
+La precisión de los modelos se cuantificó mediante dos métricas de error complementarias, ambas calculadas sobre la escala real en euros:
+
+
+1.  **MAE** (*Mean Absolute Error*, Error Medio Absoluto): Promedio del valor absoluto de las desviaciones entre el valor estimado y el real. Se expresa en euros y mide el error medio en términos absolutos.
+2. **MAPE** (*Mean Absolute Percentage Error*, Error Medio Relativo) — Promedio del error en términos porcentuales respecto al valor real, lo que permite comparar el error con independencia de la magnitud del jugador.
+
+
+Ambas métricas cuantifican la precisión del modelo y, por tanto, la magnitud del error que comete en sus estimaciones: cuanto menores son, mejor es el ajuste.
+
+
+Tras la comparación, **el mejor modelo resultó ser XGBoost**, al presentar tanto un **MAE como un MAPE inferiores** a los de la regresión lineal y el GAM. En términos prácticos, el modelo seleccionado tiende a **sobrevalorar al jugador en aproximadamente 6 millones de euros** de media, una cota de error asumible dado el amplio rango de valores del mercado y suficiente para orientar las decisiones de fichaje del dashboard. El modelo final se serializa (`models/xgboost.json`) para su consumo directo desde la capa de presentación.
+
+
 
 # Estructur del repositorio
 
