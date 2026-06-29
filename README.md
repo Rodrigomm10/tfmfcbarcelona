@@ -275,6 +275,8 @@ de las operaciones, y delega la fase de modelado en `pandas`.
 El valor de mercado presenta una distribución fuertemente **asimétrica a la derecha** (*right-skewed*): la mayoría de los jugadores se concentra en valores bajos y unos pocos alcanzan cifras muy elevadas. Para corregirlo se aplica una **transformación logarítmica** (`log1p`), que comprime la cola y aproxima la distribución a una campana de Gauss. Esta normalización mejora el ajuste de los modelos y estabiliza la varianza; las predicciones se devuelven posteriormente a la escala original en euros mediante la transformación inversa
 (`expm1`).
 
+![Distribución de variable valor de mercado](images/log_scale_dis.png)
+
 
 ## Modelos evaluados
 
@@ -291,8 +293,14 @@ Los gráficos de dependencia parcial del GAM permitieron examinar **qué factore
 
 
 1. La **liga** en la que juega el futbolista tiene un efecto apreciable sobre su valoración, lo que refleja las diferencias de mercado y exposición entre las grandes competiciones europeas.
+
+![Relación con Ligas](images/ligas_dis.png)
+
+
 2. La **edad** presenta una relación claramente **no lineal** con el valor: el valor crece en las primeras etapas de la carrera, alcanza un máximo en la franja de plenitud futbolística y decae en los jugadores veteranos. Esta curvatura justifica por sí sola el uso de modelos capaces de modelar no linealidades (GAM y XGBoost) frente a la regresión lineal simple.
 
+
+![Relación no linear de edad](images/gam_nolinear.png)
 
 ## Métricas de evaluación y selección del modelo
 La precisión de los modelos se cuantificó mediante dos métricas de error complementarias, ambas calculadas sobre la escala real en euros:
