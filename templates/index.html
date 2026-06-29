@@ -921,6 +921,52 @@
       </div>
     </div>
   
+
+   <div id="sec-partidos" class="section">
+      <div class="card">
+        <h2>Calendario y Resultados de Partidos</h2>
+        
+        <div class="filter-bar">
+          <input type="text" id="games-search" placeholder="Buscar equipo o rival..." oninput="filterGames()">
+          
+          <select id="games-comp-filter" onchange="filterGames()">
+            <option value="">Todas las competiciones</option>
+            <option value="LaLiga">LaLiga</option>
+            <option value="Champions League">UCL</option>
+            <option value="Copa del Rey">Copa del Rey</option>
+          </select>
+          
+          <select id="games-result-filter" onchange="filterGames()">
+            <option value="">Todos los signos</option>
+            <option value="W">Victoria (W)</option>
+            <option value="D">Empate (D)</option>
+            <option value="L">Derrota (L)</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Competición</th>
+                <th>Local</th>
+                <th style="text-align: center;">Resultado</th>
+                <th>Visitante</th>
+                <th>Signo</th>
+              </tr>
+            </thead>
+            <tbody id="games-tbody">
+              <tr>
+                <td colspan="6" class="loading">Cargando partidos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
       <!-- JUGADORES -->
    <div id="sec-jugadores" class="section active">
      <div class="card" style="background: transparent; border: none;">
@@ -3523,48 +3569,39 @@ async function loadEquipo() {
         document.getElementById('sec-equipo').innerHTML = `<div class="error-msg" style="text-align:center; padding: 40px; color: var(--danger);">Error cargando análisis de club: ${e.message}</div>`;
     }
 }
+
+
+
 // SECCION PARTIDOS
 
-function filterGames() {
-  const q = document.getElementById('games-search').value.toLowerCase();
-  const r = document.getElementById('games-result-filter').value;
-  const c = document.getElementById('games-comp-filter').value;
-  
-  filteredGames = allGames.filter(g => 
-    (!q || g.home.toLowerCase().includes(q) || g.away.toLowerCase().includes(q)) &&
-    (!r || g.result === r) &&
-    (!c || g.competition === c)
-  );
-  renderGames();
-}
+// 1. Declare the global arrays to store your matches data
+let allGames = [];
+let filteredGames = [];
 
-function renderGames() {
-  const tbody = document.getElementById('games-tbody');
-  if (!filteredGames.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="loading">Sin resultados</td></tr>';
-    return;
+// 2. Create the missing load function
+async function loadGames() {
+  try {
+    // Fetch JSON from your Flask endpoint (verify if your route is /api/barca/partidos)
+    const res = await fetch('/api/barca/partidos');
+    if (!res.ok) return;
+    
+    const data = await res.json();
+    
+    // Process dates to timestamps because your renderGames function uses numeric subtraction: b.date - a.date
+    allGames = data.map(g => ({
+      ...g,
+      date: g.date ? new Date(g.date).getTime() : 0
+    }));
+    
+    // Copy all data to the filtered list initially
+    filteredGames = [...allGames];
+
+    // Trigger the render
+    renderGames();
+  } catch (error) {
+    console.error("Error loading games:", error);
+    document.getElementById('games-tbody').innerHTML = '<tr><td colspan="6" style="color:var(--danger); text-align:center;">Error al cargar partidos</td></tr>';
   }
-
-  // Pure numeric sort (Descending order: newest matches first)
-  filteredGames.sort((a, b) => b.date - a.date);
-
-  tbody.innerHTML = filteredGames.map(g => {
-    // Safely parse timestamp back to YYYY-MM-DD format
-    let dateDisplay = '—';
-    if (g.date) {
-      const d = new Date(g.date);
-      dateDisplay = isNaN(d.getTime()) ? '—' : d.toISOString().substring(0, 10);
-    }
-
-    return `<tr>
-      <td>${dateDisplay}</td>
-      <td>${g.competition || '—'}</td>
-      <td>${g.home}</td>
-      <td style="text-align:center;font-weight:700;">${g.score}</td>
-      <td>${g.away}</td>
-      <td><span class="badge badge-${g.result}">${g.result}</span></td>
-    </tr>`;
-  }).join('');
 }
 
 let globalPlayersData = [];
