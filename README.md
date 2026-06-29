@@ -275,7 +275,7 @@ de las operaciones, y delega la fase de modelado en `pandas`.
 El valor de mercado presenta una distribución fuertemente **asimétrica a la derecha** (*right-skewed*): la mayoría de los jugadores se concentra en valores bajos y unos pocos alcanzan cifras muy elevadas. Para corregirlo se aplica una **transformación logarítmica** (`log1p`), que comprime la cola y aproxima la distribución a una campana de Gauss. Esta normalización mejora el ajuste de los modelos y estabiliza la varianza; las predicciones se devuelven posteriormente a la escala original en euros mediante la transformación inversa
 (`expm1`).
 
-![Distribución de variable valor de mercado](images/log_scale_dis.png)
+![Distribución de variable valor de mercado](images\log_scale_dis.png)
 
 
 ## Modelos evaluados
